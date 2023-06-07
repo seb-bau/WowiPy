@@ -163,7 +163,8 @@ class UseUnitUsageType:
     classification_id: int
     classification_name: str
 
-    def __init__(self, id_: int, name: str, classification_id: int, classification_name: str) -> None:
+    def __init__(self, id_: int, classification_id: int, name: str = None,
+                 classification_name: str = None) -> None:
         self.id_ = id_
         self.name = name
         self.classification_id = classification_id
@@ -354,9 +355,10 @@ class BankAccount:
         if "id" in bank_account_type.keys():
             bank_account_type["id_"] = bank_account_type.pop("id")
         self.bank_account_type = BankAccountType(**bank_account_type)
-        if "id" in bank_account_usage_type.keys():
-            bank_account_usage_type["id_"] = bank_account_usage_type.pop("id")
-        self.bank_account_usage_type = BankAccountUsageType(**bank_account_usage_type)
+        if bank_account_usage_type is not None:
+            if "id" in bank_account_usage_type.keys():
+                bank_account_usage_type["id_"] = bank_account_usage_type.pop("id")
+            self.bank_account_usage_type = BankAccountUsageType(**bank_account_usage_type)
 
 
 class Communication:
@@ -548,7 +550,7 @@ class EconomicUnitShort:
     name: str
     location: str
 
-    def __init__(self, id_: int, id_num: str, name: str, location: str, **kwargs) -> None:
+    def __init__(self, id_: int, id_num: str, name: str, location: str = None, **kwargs) -> None:
         self.id_ = id_
         self.id_num = id_num
         self.name = name
@@ -565,17 +567,17 @@ class EconomicUnit:
     info: str
     binding_end_date: datetime
     owner: OwnerShort
-    asset_identification: AssetIdentification
-    status_inventory: StatusInventory
-    district: District
-    monumental_protection_type: MonumentalProtectionType
-    regional_responsibility: RegionalResponsibility
-    company_code: CompanyCode
+    asset_identification: Optional[AssetIdentification]
+    status_inventory: Optional[StatusInventory]
+    district: Optional[District]
+    monumental_protection_type: Optional[MonumentalProtectionType]
+    regional_responsibility: Optional[RegionalResponsibility]
+    company_code: Optional[CompanyCode]
 
-    def __init__(self, id_: int, id_num: str, name: str, location: str, construction_year: int,
+    def __init__(self, id_: int, id_num: str, name: str, construction_year: int,
                  owner: Dict, asset_identification: Dict,
-                 status_inventory: Dict, district: Dict,
-                 company_code: Dict,
+                 status_inventory: Dict,
+                 company_code: Dict, district: Dict = None, location: str = None,
                  regional_responsibility: Dict = None, binding_end_date: datetime = None,
                  info: str = None, monumental_protection_type: Dict = None, **kwargs) -> None:
         self.id_ = id_
@@ -587,12 +589,36 @@ class EconomicUnit:
         self.binding_end_date = binding_end_date
         owner["id_"] = owner.pop("id")
         self.owner = OwnerShort(**owner)
-        self.asset_identification = AssetIdentification(**asset_identification)
-        self.status_inventory = StatusInventory(**status_inventory)
-        self.district = District(**district)
-        self.monumental_protection_type = MonumentalProtectionType(**monumental_protection_type)
-        self.regional_responsibility = RegionalResponsibility(**regional_responsibility)
-        self.company_code = CompanyCode(**company_code)
+        if asset_identification is not None:
+            asset_identification["id_"] = asset_identification.pop("id")
+            self.asset_identification = AssetIdentification(**asset_identification)
+        else:
+            self.asset_identification = None
+        if status_inventory is not None:
+            status_inventory["id_"] = status_inventory.pop("id")
+            self.status_inventory = StatusInventory(**status_inventory)
+        else:
+            self.status_inventory = None
+        if district is not None:
+            district["id_"] = district.pop("id")
+            self.district = District(**district)
+        else:
+            self.district = None
+        if monumental_protection_type is not None:
+            monumental_protection_type["id_"] = monumental_protection_type.pop("id")
+            self.monumental_protection_type = MonumentalProtectionType(**monumental_protection_type)
+        else:
+            self.monumental_protection_type = None
+        if regional_responsibility is not None:
+            regional_responsibility["id_"] = regional_responsibility.pop("id")
+            self.regional_responsibility = RegionalResponsibility(**regional_responsibility)
+        else:
+            self.regional_responsibility = None
+        if company_code is not None:
+            company_code["id_"] = company_code.pop("id")
+            self.company_code = CompanyCode(**company_code)
+        else:
+            self.company_code = None
         self.__dict__.update(kwargs)
 
 
@@ -600,23 +626,32 @@ class Building:
     construction_year: int
     move_in_date: datetime
     building_number_of_storeys: int
-    construction_method: ConstructionMethod
+    construction_method: Optional[ConstructionMethod]
     building_type: BuildingType
-    district: District
+    district: Optional[District]
     monumental_protection_type: Optional[MonumentalProtectionType]
     origin: Origin
     change_reason: Optional[ChangeReason]
 
-    def __init__(self, construction_year: int, move_in_date: datetime, origin: Dict,
-                 construction_method: Dict, building_type: Dict, district: Dict,
+    def __init__(self, origin: Dict,
+                 building_type: Dict, move_in_date: datetime = None, construction_year: int = None,
+                 construction_method: Dict = None, district: Dict = None,
                  monumental_protection_type: Dict = None, change_reason: Dict = None,
                  building_number_of_storeys: int = None) -> None:
         self.construction_year = construction_year
         self.move_in_date = move_in_date
         self.building_number_of_storeys = building_number_of_storeys
-        self.construction_method = ConstructionMethod(**construction_method)
+        if construction_method is not None:
+            construction_method["id_"] = construction_method.pop("id")
+            self.construction_method = ConstructionMethod(**construction_method)
+        else:
+            self.construction_method = None
         self.building_type = BuildingType(**building_type)
-        self.district = District(**district)
+        if district is not None:
+            district["id_"] = district.pop("id")
+            self.district = District(**district)
+        else:
+            self.district = None
         if monumental_protection_type is not None:
             self.monumental_protection_type = MonumentalProtectionType(**monumental_protection_type)
         else:
@@ -650,8 +685,9 @@ class EstateAddress:
     street_complete: str
     house_number_complete: str
 
-    def __init__(self, zip_: str, town: str, street: str, house_number: str, house_number_addition: str,
-                 country_id: int, country_code: str, street_complete: str, house_number_complete: str) -> None:
+    def __init__(self, zip_: str, town: str, street: str, house_number: str,
+                 country_id: int, country_code: str, street_complete: str, house_number_complete: str,
+                 house_number_addition: str = None) -> None:
         self.zip_ = zip_
         self.town = town
         self.street = street
@@ -802,8 +838,8 @@ class UseUnit:
     exit_date: datetime
     entry_date: datetime
     energy_certificate_id: int
-    position: Position
-    floor: Floor
+    position: Optional[Position]
+    floor: Optional[Floor]
     residential_authorization: Optional[ResidentalAuthorization]
     entry_reason: EntryReason
     exit_reason: Optional[ExitReason]
@@ -815,15 +851,14 @@ class UseUnit:
                  building_land: Dict, economic_unit: Dict,
                  estate_address: Dict, financing_type: Dict,
                  current_use_unit_type: Dict, usable_space: int,
-                 living_space: int, heating_space: int, number_of_rooms: int,
-                 number_of_half_rooms: int, description_of_position: str,
+                 living_space: int, heating_space: int,
                  management_start: datetime,
-                 move_in_date: datetime,
                  entry_date: datetime,
-                 position: Dict,
-                 floor: Dict,
                  entry_reason: Dict,
-                 use_unit_types: List[UseUnitType], energy_certificate_id: int = None,
+                 use_unit_types: List[UseUnitType], number_of_half_rooms: int = None,
+                 move_in_date: datetime = None, number_of_rooms: int = None, position: Dict = None,
+                 floor: Dict = None,
+                 energy_certificate_id: int = None, description_of_position: str = None,
                  exit_reason: Dict = None, billing_units: List[BillingUnit] = None,
                  company_code: CompanyCode = None, binding_end_date: datetime = None, exit_date: datetime = None,
                  management_end: datetime = None, target_rent: int = None,
@@ -853,8 +888,15 @@ class UseUnit:
         self.exit_date = exit_date
         self.entry_date = entry_date
         self.energy_certificate_id = energy_certificate_id
-        self.position = Position(**position)
-        self.floor = Floor(**floor)
+        if position is not None:
+            position["id_"] = position.pop("id")
+            self.position = Position(**position)
+        else:
+            self.position = None
+        if floor is not None:
+            self.floor = Floor(**floor)
+        else:
+            self.floor = None
         if residential_authorization is not None:
             self.residential_authorization = ResidentalAuthorization(**residential_authorization)
         else:

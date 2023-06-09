@@ -21,10 +21,11 @@ class WowiPy:
                  logger: logging.Logger = None):
         self._rest_adapter = RestAdapter(hostname, user, password, api_key, version, logger)
         self._cache = {
-            'license_agreements': [],
-            'economic_units': [],
-            'building_lands': [],
-            'use_units': []
+            self.CACHE_LICENSE_AGREEMENTS: [],
+            self.CACHE_CONTRACTORS: [],
+            self.CACHE_USE_UNITS: [],
+            self.CACHE_BUILDING_LANDS: [],
+            self.CACHE_ECONOMIC_UNITS: []
         }
 
     def cache_to_disk(self, cache_type: str, file_name: str):
@@ -279,9 +280,16 @@ class WowiPy:
                                person_idnum: str = None,
                                limit: int = None,
                                offset: int = 0,
-                               add_args: Dict = None) -> List[LicenseAgreement]:
+                               add_args: Dict = None,
+                               add_contractors: bool = False,
+                               use_cache: bool = False,
+                               ) -> List[LicenseAgreement]:
         """
         Gibt eine Liste mit Nutzungsverträgen zurück
+        :param add_contractors:
+        :type add_contractors:
+        :param use_cache:
+        :type use_cache:
         :param offset: Verschiebung der Abfrage. Default: 0
         :type offset: int
         :param economic_unit_idnum: (Optional) Nur Verträge dieser Wirtschaftseinheit zurückgeben
@@ -318,13 +326,28 @@ class WowiPy:
         if add_args is not None:
             filter_params.update(add_args)
 
-        result = self._rest_adapter.get(endpoint='RentAccounting/LicenseAgreements', ep_params=filter_params)
         retlist = []
-        for entry in result.data:
-            data = dict(humps.decamelize(entry))
-            data['id_'] = data.pop('id')
-            ret_la = LicenseAgreement(**data)
-            retlist.append(ret_la)
+        if use_cache:
+            cache_entry: LicenseAgreement
+            for cache_entry in self._cache[self.CACHE_LICENSE_AGREEMENTS]:
+                if (economic_unit_idnum is not None and cache_entry.use_unit.economic_unit == economic_unit_idnum) or \
+                        (use_unit_idnum is not None and cache_entry.use_unit.use_unit_number == use_unit_idnum) or \
+                        (license_agreement_idnum is not None and cache_entry.id_num == license_agreement_idnum):
+                    if add_contractors:
+                        print(cache_entry.id_)
+                        cache_entry.contractors = self.get_contractors(license_agreement_id=cache_entry.id_,
+                                                                       use_cache=True)
+                    retlist.append(copy.deepcopy(cache_entry))
+        else:
+            result = self._rest_adapter.get(endpoint='RentAccounting/LicenseAgreements', ep_params=filter_params)
+
+            for entry in result.data:
+                data = dict(humps.decamelize(entry))
+                data['id_'] = data.pop('id')
+                if add_contractors:
+                    data['contractors'] = self.get_contractors(license_agreement_id=data.get("id_"))
+                ret_la = LicenseAgreement(**data)
+                retlist.append(ret_la)
         return retlist
 
     def get_managements(self,
@@ -600,9 +623,12 @@ class WowiPy:
                         contractual_use_active_on: datetime = None,
                         limit: int = None,
                         offset: int = 0,
-                        add_args: Dict = None) -> List[Contractor]:
+                        add_args: Dict = None,
+                        use_cache: bool = False) -> List[Contractor]:
         """
         Gibt eine Liste von Vertragsnehmern zurück
+        :param use_cache:
+        :type use_cache:
         :param contractual_use_active_on: (Optional) Nur Vertragsnehmer, deren ContractUse zu diesem Zeitpunkt aktiv war
         :type contractual_use_active_on: datetime
         :param license_agreement_active_on: (Optional) Nur Contractors deren Vertrag zu diesem Datum aktiv ist
@@ -644,11 +670,19 @@ class WowiPy:
         if add_args is not None:
             filter_params.update(add_args)
 
-        result = self._rest_adapter.get(endpoint='RentAccountingPersonDetails/Contractors', ep_params=filter_params)
         retlist = []
-        for entry in result.data:
-            data = dict(humps.decamelize(entry))
-            data['id_'] = data.pop('id')
-            ret_la = Contractor(**data)
-            retlist.append(ret_la)
+        if use_cache:
+            cache_entry: Contractor
+            for cache_entry in self._cache[self.CACHE_CONTRACTORS]:
+                if (license_agreement_id is not None and cache_entry.license_agreement_id == license_agreement_id) or \
+                        (person_id is not None and cache_entry.person.id_ == person_id):
+                    retlist.append(copy.deepcopy(cache_entry))
+        else:
+            result = self._rest_adapter.get(endpoint='RentAccountingPersonDetails/Contractors', ep_params=filter_params)
+
+            for entry in result.data:
+                data = dict(humps.decamelize(entry))
+                data['id_'] = data.pop('id')
+                ret_la = Contractor(**data)
+                retlist.append(ret_la)
         return retlist

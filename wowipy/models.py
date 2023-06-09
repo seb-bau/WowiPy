@@ -124,11 +124,26 @@ class Country:
         self.code = code
 
 
+class DunningLevel:
+    id_: int
+    code: str
+
+    def __init__(self, id_: int, code: str) -> None:
+        self.id_ = id_
+        self.code = code
+
+
 class DunningData:
     dunningblock: bool
+    dunning_level: Optional[DunningLevel]
 
-    def __init__(self, dunningblock: bool) -> None:
+    def __init__(self, dunningblock: bool, dunning_level: Dict = None) -> None:
         self.dunningblock = dunningblock
+        if dunning_level is not None:
+            dunning_level["id_"] = dunning_level.pop("id")
+            self.dunning_level = DunningLevel(**dunning_level)
+        else:
+            self.dunning_level = None
 
 
 class RestrictionOfUse:
@@ -200,41 +215,6 @@ class UseUnitShort:
         self.building_land_id = building_land_id
         self.economic_unit_id = economic_unit_id
         self.economic_unit = economic_unit
-
-
-class LicenseAgreement:
-    id_: int
-    id_num: str
-    use_unit: UseUnitShort
-    restriction_of_use: RestrictionOfUse
-    status_contract: StatusContract
-    life_of_contract: LifeOfContract
-    payment_interval: PaymentInterval
-    dunning_data: DunningData
-    differing_maturity: int
-    start_contract: datetime
-    period_of_notice: PeriodOfNotice
-    debit_entry_type: DebitEntryType
-
-    def __init__(self, id_: int, id_num: str, use_unit: UseUnitShort, restriction_of_use: RestrictionOfUse,
-                 status_contract: StatusContract, life_of_contract: LifeOfContract, payment_interval: PaymentInterval,
-                 dunning_data: DunningData, start_contract: datetime,
-                 debit_entry_type: DebitEntryType, period_of_notice: PeriodOfNotice = None,
-                 differing_maturity: int = None,
-                 **kwargs) -> None:
-        self.id_ = id_
-        self.id_num = id_num
-        self.use_unit = use_unit
-        self.restriction_of_use = restriction_of_use
-        self.status_contract = status_contract
-        self.life_of_contract = life_of_contract
-        self.payment_interval = payment_interval
-        self.dunning_data = dunning_data
-        self.differing_maturity = differing_maturity
-        self.start_contract = start_contract
-        self.period_of_notice = period_of_notice
-        self.debit_entry_type = debit_entry_type
-        self.__dict__.update(kwargs)
 
 
 class CollectiveAccount:
@@ -945,3 +925,50 @@ class Contractor:
         default_address["id_"] = default_address.pop("id")
         default_address["zip_"] = default_address.pop("zip")
         self.default_address = Address(**default_address)
+
+
+class LicenseAgreement:
+    id_: int
+    id_num: str
+    use_unit: UseUnitShort
+    restriction_of_use: RestrictionOfUse
+    status_contract: StatusContract
+    life_of_contract: LifeOfContract
+    payment_interval: PaymentInterval
+    dunning_data: DunningData
+    differing_maturity: int
+    start_contract: datetime
+    period_of_notice: Optional[PeriodOfNotice]
+    debit_entry_type: DebitEntryType
+    contractors: Optional[List[Contractor]]
+
+    def __init__(self, id_: int, id_num: str, use_unit: Dict, restriction_of_use: Dict,
+                 status_contract: Dict, life_of_contract: Dict, payment_interval: Dict,
+                 dunning_data: Dict, start_contract: datetime,
+                 debit_entry_type: Dict,
+                 period_of_notice: Dict = None, contractors: List[Contractor] = None,
+                 differing_maturity: int = None,
+                 **kwargs) -> None:
+        self.id_ = id_
+        self.id_num = id_num
+        use_unit["id_"] = use_unit.pop("id")
+        self.use_unit = UseUnitShort(**use_unit)
+        restriction_of_use["id_"] = restriction_of_use.pop("id")
+        self.restriction_of_use = RestrictionOfUse(**restriction_of_use)
+        status_contract["id_"] = status_contract.pop("id")
+        self.status_contract = StatusContract(**status_contract)
+        life_of_contract["id_"] = life_of_contract.pop("id")
+        self.life_of_contract = LifeOfContract(**life_of_contract)
+        payment_interval["id_"] = payment_interval.pop("id")
+        self.payment_interval = PaymentInterval(**payment_interval)
+        self.dunning_data = DunningData(**dunning_data)
+        self.differing_maturity = differing_maturity
+        self.start_contract = start_contract
+        if period_of_notice is not None:
+            period_of_notice["id_"] = period_of_notice.pop("id")
+            self.period_of_notice = PeriodOfNotice(**period_of_notice)
+        else:
+            self.period_of_notice = None
+        self.debit_entry_type = DebitEntryType(**debit_entry_type)
+        self.contractors = contractors
+        self.__dict__.update(kwargs)

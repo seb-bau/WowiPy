@@ -558,9 +558,12 @@ class WowiPy:
                       owner_number: str = None,
                       limit: int = None,
                       offset: int = 0,
-                      add_args: Dict = None) -> List[UseUnit]:
+                      add_args: Dict = None,
+                      use_cache: bool = False) -> List[UseUnit]:
         """
         Gibt eine Liste von Nutzungseinheiten zurück
+        :param use_cache:
+        :type use_cache:
         :param use_unit_idnum: (Optional) Nur diese Nutzungseinheit zurückgeben
         :type use_unit_idnum: str
         :param building_land_idnum: (Optional) Nur Einheiten dieses Gebäudes zurückgeben
@@ -602,18 +605,28 @@ class WowiPy:
 
         if add_args is not None:
             filter_params.update(add_args)
-
-        result = self._rest_adapter.get(endpoint='CommercialInventory/UseUnits', ep_params=filter_params)
         retlist = []
-        for entry in result.data:
-            data = dict(humps.decamelize(entry))
-            data['id_'] = data.pop('id')
-            if data.get('estate_address') is not None:
-                data.get('estate_address')['zip_'] = data.get('estate_address').pop('zip')
-            if data.get('floor') is not None:
-                data.get('floor')['id_'] = data.get('floor').pop('id')
-            ret_la = UseUnit(**data)
-            retlist.append(ret_la)
+
+        if use_cache:
+            cache_entry: UseUnit
+            for cache_entry in self._cache[self.CACHE_USE_UNITS]:
+                if (use_unit_idnum is not None and cache_entry.id_num == use_unit_idnum) or \
+                        (building_land_idnum is not None and
+                         cache_entry.building_land.id_num == building_land_idnum) or \
+                        (economic_unit_idnum is not None and
+                         cache_entry.economic_unit.id_num == economic_unit_idnum):
+                    retlist.append(copy.deepcopy(cache_entry))
+        else:
+            result = self._rest_adapter.get(endpoint='CommercialInventory/UseUnits', ep_params=filter_params)
+            for entry in result.data:
+                data = dict(humps.decamelize(entry))
+                data['id_'] = data.pop('id')
+                if data.get('estate_address') is not None:
+                    data.get('estate_address')['zip_'] = data.get('estate_address').pop('zip')
+                if data.get('floor') is not None:
+                    data.get('floor')['id_'] = data.get('floor').pop('id')
+                ret_la = UseUnit(**data)
+                retlist.append(ret_la)
         return retlist
 
     def get_contractors(self,

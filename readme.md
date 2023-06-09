@@ -4,6 +4,11 @@
 WowiPy ermöglicht eine Abstrahierungsebene zur [OPENWOWI](https://docs.openwowi.de/grundlagen/eine-kurze-vorstellung-der-openwowi)-Api.
 Dokumentation: https://github.com/seb-bau/WowiPy/wiki/WowiPy-Dokumentation
 
+### Installation
+````
+pip install wowipy
+````
+
 ### Funktionen aktuell
 * Stammdatenabfrage (Personen, Unternehmen, Wirtschaftseinheiten, Gebäude, Nutzungseinheiten)
 * Mietvertragabfrage (Nutzungsverträge, Vertragsnehmer)

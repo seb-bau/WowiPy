@@ -1,21 +1,19 @@
 # WowiPy
 ### WOWIPORT OPENWOWI API Python Wrapper
 ### Allgemein
-Achtung: Der angebotene Wrapper ist kein offizielles Produkt der Dr. Klein Wowi Digital!
-
-Nutzen Sie OPENWOWI in Ihren Python-Projekten, ohne sich um die Syntax und Endpunkte kümmern zu müssen.  
-WowiPy ist eine Sammlung aus Highlevel-Methoden, die u.A. die Stammdatenabfrage aus Wowiport vereinfacht.  
-Darüber hinaus sollen im Laufe der Zeit weitere Funktionen eingebunden werden.
-
-WowiPy befindet sich aktuell noch im Aufbau!
+WowiPy ermöglicht eine Abstrahierungsebene zur [OPENWOWI](https://docs.openwowi.de/grundlagen/eine-kurze-vorstellung-der-openwowi)-Api.
+Dokumentation: https://github.com/seb-bau/WowiPy/wiki/WowiPy-Dokumentation
 
 ### Funktionen aktuell
 * Stammdatenabfrage (Personen, Unternehmen, Wirtschaftseinheiten, Gebäude, Nutzungseinheiten)
 * Mietvertragabfrage (Nutzungsverträge, Vertragsnehmer)
+* Caching (RAM und Disk)
+* Verbindung ausgewählter Endpunkte (Beispiel: Es ist möglich, Vertragsnehmer direkt mit dem Nutzungsvertrag ausgeben
+zu lassen)
 
 ### Geplante Funktionen
 * Abbildung sämtlicher OPENWOWI-Endpunkte
-* Caching-Mechanismus (RAM und Disk)
+* Suche inkl. Wildcards (in Ansätzen vorhanden)
 
 ### Anwendungsbeispiel
 Abfrage des Start-Datums eines bestimmten Vertrages

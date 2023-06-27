@@ -1,0 +1,3 @@
+wowipy~=0.0.1
+requests~=2.31.0
+setuptools~=65.5.1

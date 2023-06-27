@@ -113,6 +113,66 @@ class ContractorType(IdNameCombination):
     pass
 
 
+class ChangeReasonContracts(IdNameCombination):
+    pass
+
+
+class ValidContractPosition(IdNameCombination):
+    pass
+
+
+class ContractPositionType:
+    id_: int
+    node_id: int
+    name: str
+    short_code: str
+    deposit: bool
+    wb_relevant: bool
+    bgb_relevant: bool
+    is_part_of_net_rent: bool
+    using_cp_as_prepayment_block: bool
+    assignment_prepayment: str
+    is_gross_rent_without_heating: bool
+    is_part_of_net_rent_census: bool
+    is_basis_calculation_reminder_charge_interest: bool
+    is_prepayment_heating: bool
+    is_prepayment_running_cost: bool
+    report_as_sinking_fund: bool
+
+    def __init__(self, id_: int, node_id: int, name: str, short_code: str, deposit: bool, wb_relevant: bool,
+                 bgb_relevant: bool, is_part_of_net_rent: bool, using_cp_as_prepayment_block: bool,
+                 assignment_prepayment: str, is_gross_rent_without_heating: bool, is_part_of_net_rent_census: bool,
+                 is_basis_calculation_reminder_charge_interest: bool, is_prepayment_heating: bool,
+                 is_prepayment_running_cost: bool, report_as_sinking_fund: bool) -> None:
+        self.id_ = id_
+        self.node_id = node_id
+        self.name = name
+        self.short_code = short_code
+        self.deposit = deposit
+        self.wb_relevant = wb_relevant
+        self.bgb_relevant = bgb_relevant
+        self.is_part_of_net_rent = is_part_of_net_rent
+        self.using_cp_as_prepayment_block = using_cp_as_prepayment_block
+        self.assignment_prepayment = assignment_prepayment
+        self.is_gross_rent_without_heating = is_gross_rent_without_heating
+        self.is_part_of_net_rent_census = is_part_of_net_rent_census
+        self.is_basis_calculation_reminder_charge_interest = is_basis_calculation_reminder_charge_interest
+        self.is_prepayment_heating = is_prepayment_heating
+        self.is_prepayment_running_cost = is_prepayment_running_cost
+        self.report_as_sinking_fund = report_as_sinking_fund
+
+
+class ContractPositionTypeSlim:
+    id_: int
+    name: str
+    short_code: str
+
+    def __init__(self, id_: int, name: str, short_code: str) -> None:
+        self.id_ = id_
+        self.name = name
+        self.short_code = short_code
+
+
 class Country:
     id_: int
     name: str
@@ -208,8 +268,8 @@ class UseUnitShort:
     economic_unit_id: int
     economic_unit: str
 
-    def __init__(self, id_: int, use_unit_number: str, building_land_id: int, economic_unit_id: int,
-                 economic_unit: str) -> None:
+    def __init__(self, id_: int, use_unit_number: str, building_land_id: int = 0, economic_unit_id: int = 0,
+                 economic_unit: str = 0) -> None:
         self.id_ = id_
         self.use_unit_number = use_unit_number
         self.building_land_id = building_land_id
@@ -927,6 +987,27 @@ class Contractor:
         self.default_address = Address(**default_address)
 
 
+class LicenseAgreementShort:
+    id_: int
+    id_num: str
+    use_unit: UseUnitShort
+
+    def __init__(self, id_: int, id_num: str, use_unit: Dict) -> None:
+        self.id_ = id_
+        self.id_num = id_num
+        use_unit["id_"] = use_unit.pop("id")
+        self.use_unit = UseUnitShort(**use_unit)
+
+
+class VatRate:
+    id_: int
+    code: str
+
+    def __init__(self, id_: int, code: str) -> None:
+        self.id_ = id_
+        self.code = code
+
+
 class LicenseAgreement:
     id_: int
     id_num: str
@@ -972,3 +1053,44 @@ class LicenseAgreement:
         self.debit_entry_type = DebitEntryType(**debit_entry_type)
         self.contractors = contractors
         self.__dict__.update(kwargs)
+
+
+class ContractPosition:
+    id_: int
+    net_amount: int
+    amount: int
+    active_from: datetime
+    active_to: datetime
+    license_agreement: LicenseAgreementShort
+    vat_rate: VatRate
+    valid_contract_position: ValidContractPosition
+    change_reason_contracts: ChangeReasonContracts
+    contract_position_type: ContractPositionType
+    contract_position_type_slim: Optional[ContractPositionTypeSlim]
+
+    def __init__(self, id_: int, net_amount: int, amount: int, active_from: datetime,
+                 active_to: datetime, license_agreement: Dict,
+                 vat_rate: Dict, valid_contract_position: Dict,
+                 change_reason_contracts: Dict,
+                 contract_position_type: Dict,
+                 contract_position_type_slim: Dict) -> None:
+        self.id_ = id_
+        self.net_amount = net_amount
+        self.amount = amount
+        self.active_from = active_from
+        self.active_to = active_to
+        license_agreement["id_"] = license_agreement.pop("id")
+        self.license_agreement = LicenseAgreementShort(**license_agreement)
+        vat_rate["id_"] = vat_rate.pop("id")
+        self.vat_rate = VatRate(**vat_rate)
+        valid_contract_position["id_"] = valid_contract_position.pop("id")
+        self.valid_contract_position = ValidContractPosition(**valid_contract_position)
+        change_reason_contracts["id_"] = change_reason_contracts.pop("id")
+        self.change_reason_contracts = ChangeReasonContracts(**change_reason_contracts)
+        contract_position_type["id_"] = contract_position_type.pop("id")
+        self.contract_position_type = ContractPositionType(**contract_position_type)
+        if contract_position_type_slim is not None:
+            contract_position_type_slim["id_"] = contract_position_type_slim.pop("id")
+            self.contract_position_type_slim = ContractPositionTypeSlim(**contract_position_type_slim)
+        else:
+            self.contract_position_type_slim = None

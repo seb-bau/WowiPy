@@ -34,7 +34,8 @@ class RestAdapter:
         self.user = user
         self.password = password
         self.api_key = api_key
-        self.token = self._create_token()
+        if len(hostname) > 0:
+            self.token = self._create_token()
 
     def _create_token(self):
         full_url = f"https://{self.host_base}/oauth2/token"

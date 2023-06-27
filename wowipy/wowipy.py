@@ -42,6 +42,104 @@ class WowiPy:
         with open(file_name, 'rb') as fp:
             self._cache[cache_type] = pickle.load(fp)
 
+    def search_string(self, haystack: str, needle: str, search_mode: str = SEARCH_POS_CONTAINS) -> bool:
+        haystack = haystack.lower()
+        needle = needle.lower()
+        if (search_mode == self.SEARCH_POS_CONTAINS and needle in haystack) or \
+                (search_mode == self.SEARCH_POS_LEFT and haystack.startswith(needle)):
+            return True
+        else:
+            return False
+
+    def search_contractor(self, search_name: str = None, search_address: str = None, search_phone: str = None,
+                          search_email: str = None, max_results: int = 10,
+                          search_mode: str = SEARCH_POS_CONTAINS) -> List:
+        person_ids = []
+        res = []
+        entry: Contractor
+        for entry in self._cache.get(self.CACHE_CONTRACTORS):
+            if len(res) >= max_results:
+                break
+
+            if entry.person.id_ in person_ids:
+                continue
+
+            if search_name is not None:
+                first_name = entry.person.natural_person.first_name.lower()
+                last_name = entry.person.natural_person.last_name.lower()
+                if self.search_string(first_name, search_name, search_mode) or \
+                        self.search_string(last_name, search_name, search_mode):
+                    res.append(entry)
+                    person_ids.append(entry.person.id_)
+                    continue
+
+            if search_address is not None:
+                address: Address
+                address_found = False
+                for address in entry.person.addresses:
+                    street = address.street_complete
+                    if self.search_string(street, search_address, search_mode):
+                        address_found = True
+                        break
+                if address_found:
+                    res.append(entry)
+                    person_ids.append(entry.person.id_)
+                    continue
+
+            if search_phone is not None:
+                communication: Communication
+                phone_found = False
+                if entry.person.communications is None:
+                    continue
+                for comm in entry.person.communications:
+                    if comm.communication_type.name == "Festnetz" or comm.communication_type.name == "Handynummer":
+                        content = comm.content.strip()
+                        search_phone = search_phone.strip()
+                        # Problem: Es gibt diverse gängige Formate für Rufnummern. Es gibt keine Formatvorgabe in
+                        # Wowiport, also können wir auch nicht vorhersehen, welches gewählt wurde.
+                        # Wenn ein + gefunden wurde, werden die ersten drei Zeichen von needle und haystack entfernt.
+                        # Ansonsten werden alle führenden Nullen entfernt
+                        if content.startswith('+'):
+                            content = content[3:]
+                        if search_phone.startswith('+'):
+                            search_phone = search_phone[3:]
+                        if search_phone.startswith('0049'):
+                            search_phone = search_phone[4:]
+                        if content.startswith('0049'):
+                            content = content[4:]
+
+                        content = content.lstrip('0')
+                        search_phone = search_phone.lstrip('0')
+
+                        content = content.replace(' ', '')
+                        search_phone = search_phone.replace(' ', '')
+
+                        if self.search_string(content, search_phone, search_mode):
+                            phone_found = True
+                            break
+                if phone_found:
+                    res.append(entry)
+                    person_ids.append(entry.person.id_)
+                    continue
+
+            if search_email is not None:
+                communication: Communication
+                email_found = False
+                if entry.person.communications is None:
+                    continue
+                for comm in entry.person.communications:
+                    if comm.communication_type.name == "E-Mail":
+                        content = comm.content.strip()
+                        if self.search_string(content, search_email, search_mode):
+                            email_found = True
+                            break
+                if email_found:
+                    res.append(entry)
+                    person_ids.append(entry.person.id_)
+                    continue
+
+        return res
+
     def search_cache(self, search_str: str, cache_types: Dict = None, max_results: int = 10,
                      find_pos: str = SEARCH_POS_CONTAINS) -> Dict:
         if cache_types is None:
@@ -585,13 +683,13 @@ class WowiPy:
         """
         filter_params = {}
         if use_unit_idnum is not None:
-            filter_params['useUnitNumber'] = owner_number
+            filter_params['useUnitNumber'] = use_unit_idnum
         if building_land_idnum is not None:
-            filter_params['buildingLandIdNum'] = owner_number
+            filter_params['buildingLandIdNum'] = building_land_idnum
         if economic_unit_idnum is not None:
-            filter_params['EconomicUnitIdNum'] = owner_number
+            filter_params['EconomicUnitIdNum'] = economic_unit_idnum
         if management_idnum is not None:
-            filter_params['managementIdNum'] = owner_number
+            filter_params['managementIdNum'] = management_idnum
         if owner_number is not None:
             filter_params['ownerNumber'] = owner_number
         if limit is not None:
@@ -698,4 +796,40 @@ class WowiPy:
                 data['id_'] = data.pop('id')
                 ret_la = Contractor(**data)
                 retlist.append(ret_la)
+        return retlist
+
+    def get_contract_positions(self,
+                               license_agreement_idnum: str = None,
+                               license_agreement_id: int = None,
+                               contract_positions_active_on: datetime = None,
+                               limit: int = None,
+                               offset: int = 0,
+                               add_args: Dict = None) -> List[ContractPosition]:
+
+        filter_params = {}
+        if license_agreement_idnum is not None:
+            filter_params['licenseAgreementIdNum'] = license_agreement_idnum
+        if license_agreement_id is not None:
+            filter_params['licenseAgreementId'] = license_agreement_id
+        if contract_positions_active_on is not None:
+            filter_params['contractPositionsActiveOn'] = contract_positions_active_on.strftime("%Y-%m-%d")
+        if limit is not None:
+            filter_params['limit'] = limit
+        filter_params['offset'] = offset
+
+        filter_params['includeContractPositionTypeDetails'] = 'true'
+        filter_params['showNullValues'] = 'true'
+
+        if add_args is not None:
+            filter_params.update(add_args)
+
+        retlist = []
+        result = self._rest_adapter.get(endpoint='RentAccounting/ContractPositions', ep_params=filter_params)
+
+        for entry in result.data:
+            data = dict(humps.decamelize(entry))
+            data['id_'] = data.pop('id')
+            ret_la = ContractPosition(**data)
+            retlist.append(ret_la)
+
         return retlist

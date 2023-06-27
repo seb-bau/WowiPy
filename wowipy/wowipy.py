@@ -2,6 +2,7 @@ import copy
 import logging
 import humps
 import pickle
+from jsonmerge import Merger
 from wowipy.rest_adapter import RestAdapter
 from wowipy.exceptions import WowiPyException
 from wowipy.models import *
@@ -267,7 +268,7 @@ class WowiPy:
         offset = 0
         ret_list = self.get_building_lands(management_idnum=management_idnum,
                                            owner_number=owner_number,
-                                           economic_idnum=economic_idnum,
+                                           economic_unit_idnum=economic_idnum,
                                            add_args=add_args, limit=limit, offset=offset)
         response_len = len(ret_list)
 
@@ -275,7 +276,7 @@ class WowiPy:
             offset += limit
             t_resp = self.get_building_lands(management_idnum=management_idnum,
                                              owner_number=owner_number,
-                                             economic_idnum=economic_idnum,
+                                             economic_unit_idnum=economic_idnum,
                                              add_args=add_args, limit=limit, offset=offset)
             response_len = len(t_resp)
             ret_list = ret_list + t_resp
@@ -547,21 +548,27 @@ class WowiPy:
     def get_building_lands(self,
                            management_idnum: str = None,
                            owner_number: str = None,
-                           economic_idnum: str = None,
+                           economic_unit_idnum: str = None,
                            building_land_idnum: str = None,
                            limit: int = None,
                            offset: int = 0,
-                           add_args: Dict = None) -> List[BuildingLand]:
+                           add_args: Dict = None,
+                           fetch_all: bool = False,
+                           use_cache: bool = False) -> List[BuildingLand]:
         """
         Gibt ein oder mehrere Gebäude als Liste zurück.
+        :param fetch_all:
+        :type fetch_all:
+        :param use_cache:
+        :type use_cache:
         :param offset: Verschiebung der Abfrage. Default: 0
         :type offset: int
         :param management_idnum: (Optional) Nur Gebäude dieses Managements zurückgeben
         :type management_idnum: str
         :param owner_number: (Optional) Nur Gebäude dieses Eigentümers zurückgeben
         :type owner_number: str
-        :param economic_idnum: (Optional) Nur Gebäude dieser Wirtschaftseinheit zurückgeben
-        :type economic_idnum: str
+        :param economic_unit_idnum: (Optional) Nur Gebäude dieser Wirtschaftseinheit zurückgeben
+        :type economic_unit_idnum: str
         :param building_land_idnum: (Optional) Nur das Gebäude mit dieser IdNum zurückgeben
         :type building_land_idnum: str
         :param limit: Maxmiale Anzahl an Einträgen, die zurückgegeben werden sollen (max = default = 100)
@@ -577,8 +584,8 @@ class WowiPy:
             filter_params['managementIdNum'] = management_idnum
         if owner_number is not None:
             filter_params['ownerNumber'] = owner_number
-        if economic_idnum is not None:
-            filter_params['economicIdNum'] = economic_idnum
+        if economic_unit_idnum is not None:
+            filter_params['economicIdNum'] = economic_unit_idnum
         if building_land_idnum is not None:
             filter_params['buildingLandIdNum'] = building_land_idnum
         if limit is not None:
@@ -590,15 +597,38 @@ class WowiPy:
 
         if add_args is not None:
             filter_params.update(add_args)
-
-        result = self._rest_adapter.get(endpoint='CommercialInventory/BuildingLands', ep_params=filter_params)
         retlist = []
-        for entry in result.data:
-            data = dict(humps.decamelize(entry))
-            data['id_'] = data.pop('id')
-            data.get('estate_address')['zip_'] = data.get('estate_address').pop('zip')
-            ret_la = BuildingLand(**data)
-            retlist.append(ret_la)
+        if use_cache:
+            cache_entry: BuildingLand
+            for cache_entry in self._cache[self.CACHE_BUILDING_LANDS]:
+                if (economic_unit_idnum is not None and
+                    cache_entry.economic_unit.id_num == economic_unit_idnum) or \
+                        economic_unit_idnum is None:
+                    retlist.append(copy.deepcopy(cache_entry))
+        else:
+            if not fetch_all:
+                result = self._rest_adapter.get(endpoint='CommercialInventory/BuildingLands', ep_params=filter_params)
+            else:
+                result = Result(0, "", [])
+                merge_schema = {"mergeStrategy": "append"}
+                merger = Merger(schema=merge_schema)
+                filter_params['offset'] = 0
+                filter_params['limit'] = 100
+                response_count = 100
+                while response_count == 100:
+                    part_result = self._rest_adapter.get(endpoint='CommercialInventory/BuildingLands',
+                                                         ep_params=filter_params)
+                    result.data = merger.merge(result.data, part_result.data)
+                    filter_params['offset'] += 100
+                    response_count = len(part_result.data)
+                    print(f"Building-Count: {len(result.data)}")
+
+            for entry in result.data:
+                data = dict(humps.decamelize(entry))
+                data['id_'] = data.pop('id')
+                data.get('estate_address')['zip_'] = data.get('estate_address').pop('zip')
+                ret_la = BuildingLand(**data)
+                retlist.append(ret_la)
         return retlist
 
     def get_owners(self,

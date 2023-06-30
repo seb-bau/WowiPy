@@ -9,6 +9,123 @@ class Result:
         self.data = data if data else []
 
 
+class CraftActivity:
+    id_: int
+    code: str
+
+    def __init__(self, id_: int, code: str) -> None:
+        self.id_ = id_
+        self.code = code
+
+
+class PaymentFileStatus:
+    id_: int
+    code: str
+
+    def __init__(self, id_: int, code: str) -> None:
+        self.id_ = id_
+        self.code = code
+
+
+class SalesTax:
+    id_: int
+    code: str
+
+    def __init__(self, id_: int, code: str) -> None:
+        self.id_ = id_
+        self.code = code
+
+
+class CommissionType:
+    id_: int
+    code: str
+
+    def __init__(self, id_: int, code: str) -> None:
+        self.id_ = id_
+        self.code = code
+
+
+class CommissionStatus:
+    id_: int
+    code: str
+
+    def __init__(self, id_: int, code: str) -> None:
+        self.id_ = id_
+        self.code = code
+
+
+class Commission:
+    id_: int
+    id_num: str
+    code: str
+    recording_date: datetime
+    release_date: datetime
+    placing_date: Optional[datetime]
+    acceptance_date: Optional[datetime]
+    completion_date: Optional[datetime]
+    commission_type: CommissionType
+    commission_status: CommissionStatus
+
+    def __init__(self, id_: int,
+                 id_num: str,
+                 code: str,
+                 recording_date: str,
+                 release_date: str,
+                 placing_date: str,
+                 acceptance_date: str,
+                 completion_date: str,
+                 commission_type: Dict,
+                 commission_status: Dict) -> None:
+        self.id_ = id_
+        self.id_num = id_num
+        self.code = code
+        self.recording_date = datetime.strptime(recording_date, "%Y-%m-%dT%H:%M:%S%z")
+        if '.' in release_date:
+            self.release_date = datetime.strptime(release_date, "%Y-%m-%dT%H:%M:%S.%f%z")
+        else:
+            self.release_date = datetime.strptime(release_date, "%Y-%m-%dT%H:%M:%S%z")
+        if placing_date is not None:
+            if '.' in placing_date:
+                self.placing_date = datetime.strptime(placing_date, "%Y-%m-%dT%H:%M:%S.%f%z")
+            else:
+                self.placing_date = datetime.strptime(placing_date, "%Y-%m-%dT%H:%M:%S%z")
+        else:
+            self.placing_date = None
+        if acceptance_date is not None:
+            self.acceptance_date = datetime.strptime(acceptance_date, "%Y-%m-%dT%H:%M:%S.%f%z")
+        else:
+            self.acceptance_date = None
+        if completion_date is not None:
+            if '.' in completion_date:
+                self.completion_date = datetime.strptime(completion_date, "%Y-%m-%dT%H:%M:%S.%f%z")
+            else:
+                self.completion_date = datetime.strptime(completion_date, "%Y-%m-%dT%H:%M:%S%z")
+        else:
+            self.completion_date = None
+        commission_type["id_"] = commission_type.pop("id")
+        self.commission_type = CommissionType(**commission_type)
+        commission_status["id_"] = commission_status.pop("id")
+        self.commission_status = CommissionStatus(**commission_status)
+
+
+class Component:
+    id_: int
+    name: str
+
+    def __init__(self, id_: int, name: str) -> None:
+        self.id_ = id_
+        self.name = name
+
+
+class Facility:
+    id_: int
+    name: str
+
+    def __init__(self, id_: int, name: str) -> None:
+        self.id_ = id_
+        self.name = name
+
+
 class IdNameCombination:
     id_: int
     name: str
@@ -317,6 +434,207 @@ class CompanyCode:
         self.name = name
         self.code = code
         self.arge_code = arge_code
+
+
+class QuantityType:
+    id_: int
+    name: str
+    code: str
+    arge_code: Optional[str]
+
+    def __init__(self, id_: int, name: str, code: str, arge_code: str = None) -> None:
+        self.id_ = id_
+        self.name = name
+        self.code = code
+        self.arge_code = arge_code
+
+
+class ServiceCatalogue:
+    id_: int
+    id_num: str
+    description: str
+    quantity_type: Optional[QuantityType]
+
+    def __init__(self, id_: int, id_num: str, description: str, quantity_type: Dict) -> None:
+        self.id_ = id_
+        self.id_num = id_num
+        self.description = description
+        if quantity_type is not None:
+            self.quantity_type = QuantityType(**quantity_type)
+        else:
+            self.quantity_type = None
+
+
+class CommissionItem:
+    id_: int
+    code: str
+    unit_price: int
+    gross_amount: int
+    net_amount: int
+    units: int
+    commission_text: str
+    internal_description: str
+    position_number: int
+    sales_tax: SalesTax
+    service_catalogue: ServiceCatalogue
+    craft_activity: CraftActivity
+    quantity_type: Optional[QuantityType]
+    component: Optional[Component]
+    facility: Optional[Facility]
+    approved_net_amount: int
+    commission: Commission
+
+    def __init__(self, id_: int,
+                 code: str,
+                 unit_price: int,
+                 gross_amount: int,
+                 net_amount: int,
+                 units: int,
+                 commission_text: str,
+                 internal_description: str,
+                 position_number: int,
+                 sales_tax: Dict,
+                 service_catalogue: Dict,
+                 craft_activity: Dict,
+                 quantity_type: Dict,
+                 component: Dict,
+                 facility: Dict,
+                 approved_net_amount: int,
+                 commission: Dict) -> None:
+        self.id_ = id_
+        self.code = code
+        self.unit_price = unit_price
+        self.gross_amount = gross_amount
+        self.net_amount = net_amount
+        self.units = units
+        self.commission_text = commission_text
+        self.internal_description = internal_description
+        self.position_number = position_number
+        sales_tax["id_"] = sales_tax.pop("id")
+        self.sales_tax = SalesTax(**sales_tax)
+        service_catalogue["id_"] = service_catalogue.pop("id")
+        self.service_catalogue = ServiceCatalogue(**service_catalogue)
+        craft_activity["id_"] = craft_activity.pop("id")
+        self.craft_activity = CraftActivity(**craft_activity)
+        if quantity_type is not None:
+            quantity_type["id_"] = quantity_type.pop("id")
+            self.quantity_type = QuantityType(**quantity_type)
+        else:
+            self.quantity_type = None
+        if component is not None:
+            component["id_"] = component.pop("id")
+            self.component = Component(**component)
+        else:
+            self.component = None
+        if facility is not None:
+            facility["id_"] = facility.pop("id")
+            self.facility = Facility(**facility)
+        else:
+            self.facility = None
+        self.approved_net_amount = approved_net_amount
+        commission["id_"] = commission.pop("id")
+        self.commission = Commission(**commission)
+
+
+class PaymentOrderElement:
+    payment_order_number: str
+    maturity: datetime
+    transfer_date: datetime
+    payment_file_status: PaymentFileStatus
+
+    def __init__(self,
+                 payment_order_number: str,
+                 maturity: str,
+                 transfer_date: str,
+                 payment_file_status: Dict) -> None:
+        self.payment_order_number = payment_order_number
+        self.maturity = datetime.strptime(maturity, "%Y-%m-%d")
+        self.transfer_date = datetime.strptime(transfer_date, "%Y-%m-%d")
+        payment_file_status["id_"] = payment_file_status.pop("id")
+        self.payment_file_status = PaymentFileStatus(**payment_file_status)
+
+
+class TaxSubtotal:
+    net: int
+    vat: int
+    tax: CraftActivity
+
+    def __init__(self, net: int, vat: int, tax: CraftActivity) -> None:
+        self.net = net
+        self.vat = vat
+        self.tax = tax
+
+
+class TaxTotal:
+    tax_amount: int
+    tax_subtotal: List[TaxSubtotal]
+
+    def __init__(self, tax_amount: int, tax_subtotal: List[TaxSubtotal]) -> None:
+        self.tax_amount = tax_amount
+        self.tax_subtotal = tax_subtotal
+
+
+class MonetaryTotal:
+    tax_exclusive_amount: int
+    tax_inclusive_amount: int
+    labor_cost: int
+    material_cost: int
+
+    def __init__(self, tax_exclusive_amount: int, tax_inclusive_amount: int, labor_cost: int,
+                 material_cost: int) -> None:
+        self.tax_exclusive_amount = tax_exclusive_amount
+        self.tax_inclusive_amount = tax_inclusive_amount
+        self.labor_cost = labor_cost
+        self.material_cost = material_cost
+
+
+class InvoiceReceipt:
+    id_: int
+    number: str
+    company_code: CompanyCode
+    payment_orders: List[PaymentOrderElement]
+    invoice_date: datetime
+    maturity_date: datetime
+    monetary_total: MonetaryTotal
+    tax_total: TaxTotal
+    commission_items: List[CommissionItem]
+
+    def __init__(self, id_: int,
+                 number: str,
+                 company_code: Dict,
+                 invoice_date: str,
+                 maturity_date: str,
+                 monetary_total: Dict,
+                 tax_total: Dict,
+                 payment_orders: List[Dict],
+                 commission_items: List[Dict]) -> None:
+        self.id_ = id_
+        self.number = number
+        company_code["id_"] = company_code.pop("id")
+        self.company_code = CompanyCode(**company_code)
+        if '.' in invoice_date:
+            self.invoice_date = datetime.strptime(invoice_date, "%Y-%m-%dT%H:%M:%S.%f%z")
+        else:
+            self.invoice_date = datetime.strptime(invoice_date, "%Y-%m-%dT%H:%M:%S%z")
+        if '.' in maturity_date:
+            self.maturity_date = datetime.strptime(maturity_date, "%Y-%m-%dT%H:%M:%S.%f%z")
+        else:
+            self.maturity_date = datetime.strptime(maturity_date, "%Y-%m-%dT%H:%M:%S%z")
+        self.monetary_total = MonetaryTotal(**monetary_total)
+        self.tax_total = TaxTotal(**tax_total)
+        tpayment_orders = []
+        if payment_orders is not None:
+            for payment_order in payment_orders:
+                payment_order_obj = PaymentOrderElement(**payment_order)
+                tpayment_orders.append(payment_order_obj)
+        self.payment_orders = tpayment_orders
+        tcommission_items = []
+        if commission_items is not None:
+            for commission_item in commission_items:
+                commission_item["id_"] = commission_item.pop("id")
+                commission_item_obj = CommissionItem(**commission_item)
+                tcommission_items.append(commission_item_obj)
+        self.commission_items = tcommission_items
 
 
 class Address:

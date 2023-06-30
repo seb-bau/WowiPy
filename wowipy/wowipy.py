@@ -678,6 +678,50 @@ class WowiPy:
             retlist.append(ret_la)
         return retlist
 
+    def get_commissioning_invoice_receipts(self,
+                                           limit: int = None,
+                                           offset: int = 0,
+                                           add_args: Dict = None,
+                                           fetch_all: bool = False) -> List[InvoiceReceipt]:
+        filter_params = {}
+        if limit is not None:
+            filter_params['limit'] = limit
+        filter_params['offset'] = offset
+
+        # Ein paar Standardwerte, können aber durch add_args überschrieben werden
+        filter_params['showNullValues'] = 'true'
+        filter_params['includePaymentOrder'] = 'true'
+
+        if add_args is not None:
+            filter_params.update(add_args)
+        retlist = []
+
+        if not fetch_all:
+            result = self._rest_adapter.get(endpoint='Commissioning/InvoiceReceipt/CommissionItems',
+                                            ep_params=filter_params)
+        else:
+            result = Result(0, "", [])
+            merge_schema = {"mergeStrategy": "append"}
+            merger = Merger(schema=merge_schema)
+            filter_params['offset'] = 0
+            filter_params['limit'] = 100
+            response_count = 100
+            while response_count == 100:
+                part_result = self._rest_adapter.get(endpoint='Commissioning/InvoiceReceipt/CommissionItems',
+                                                     ep_params=filter_params)
+                result.data = merger.merge(result.data, part_result.data)
+                filter_params['offset'] += 100
+                response_count = len(part_result.data)
+                print(f"Receipt-Count: {len(result.data)}")
+
+        for entry in result.data:
+            data = dict(humps.decamelize(entry))
+            data['id_'] = data.pop('id')
+            ret_la = InvoiceReceipt(**data)
+            retlist.append(ret_la)
+
+        return retlist
+
     def get_use_units(self,
                       use_unit_idnum: str = None,
                       building_land_idnum: str = None,

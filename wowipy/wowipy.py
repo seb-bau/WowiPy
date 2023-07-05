@@ -697,7 +697,7 @@ class WowiPy:
         retlist = []
 
         if not fetch_all:
-            result = self._rest_adapter.get(endpoint='Commissioning/InvoiceReceipt/CommissionItems',
+            result = self._rest_adapter.get(endpoint='CommissioningRead/InvoiceReceipt/CommissionItems',
                                             ep_params=filter_params)
         else:
             result = Result(0, "", [])
@@ -707,7 +707,7 @@ class WowiPy:
             filter_params['limit'] = 100
             response_count = 100
             while response_count == 100:
-                part_result = self._rest_adapter.get(endpoint='Commissioning/InvoiceReceipt/CommissionItems',
+                part_result = self._rest_adapter.get(endpoint='CommissioningRead/InvoiceReceipt/CommissionItems',
                                                      ep_params=filter_params)
                 result.data = merger.merge(result.data, part_result.data)
                 filter_params['offset'] += 100

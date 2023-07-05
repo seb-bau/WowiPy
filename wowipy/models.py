@@ -310,6 +310,40 @@ class DunningLevel:
         self.code = code
 
 
+class Budget:
+    id_: int
+    code: str
+
+    def __init__(self, id_: int, code: str) -> None:
+        self.id_ = id_
+        self.code = code
+
+
+class BudgetDetail:
+    id_: int
+    budget_id: int
+    hierarchy1_value: str
+    hierarchy2_value: str
+    hierarchy3_value: str
+
+    def __init__(self, id_: int, budget_id: int, hierarchy1_value: str,
+                 hierarchy2_value: str, hierarchy3_value: str) -> None:
+        self.id_ = id_
+        self.budget_id = budget_id
+        self.hierarchy1_value = hierarchy1_value
+        self.hierarchy2_value = hierarchy2_value
+        self.hierarchy3_value = hierarchy3_value
+
+
+class BudgetData:
+    budget: Budget
+    budget_detail: BudgetDetail
+
+    def __init__(self, budget: Dict, budget_detail: Dict):
+        self.budget = Budget(**budget)
+        self.budget_detail = BudgetDetail(**budget_detail)
+
+
 class DunningData:
     dunningblock: bool
     dunning_level: Optional[DunningLevel]
@@ -475,6 +509,7 @@ class CommissionItem:
     commission_text: str
     internal_description: str
     position_number: int
+    budget_data: Optional[BudgetData]
     sales_tax: SalesTax
     service_catalogue: ServiceCatalogue
     craft_activity: CraftActivity
@@ -493,6 +528,7 @@ class CommissionItem:
                  commission_text: str,
                  internal_description: str,
                  position_number: int,
+                 budget_data: Dict,
                  sales_tax: Dict,
                  service_catalogue: Dict,
                  craft_activity: Dict,
@@ -510,6 +546,11 @@ class CommissionItem:
         self.commission_text = commission_text
         self.internal_description = internal_description
         self.position_number = position_number
+        if budget_data is not None:
+            budget_data["id_"] = budget_data.pop("id")
+            self.budget_data = BudgetData(**budget_data)
+        else:
+            self.budget_data = None
         sales_tax["id_"] = sales_tax.pop("id")
         self.sales_tax = SalesTax(**sales_tax)
         service_catalogue["id_"] = service_catalogue.pop("id")

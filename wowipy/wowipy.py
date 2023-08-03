@@ -907,3 +907,119 @@ class WowiPy:
             retlist.append(ret_la)
 
         return retlist
+
+    def get_tickets(self,
+                    ticket_id: int = None,
+                    ticket_id_num: str = None,
+                    ticket_priority_id: int = None,
+                    ticket_status_id: int = None,
+                    ticket_source_id: int = None,
+                    limit: int = None,
+                    offset: int = 0,
+                    add_args: Dict = None
+                    ) -> List[Ticket]:
+
+        filter_params = {}
+        if ticket_id is not None:
+            filter_params['ticketId'] = ticket_id
+        if ticket_id_num is not None:
+            filter_params['ticketIdNum'] = ticket_id_num
+        if ticket_priority_id is not None:
+            filter_params['ticketPriorityId'] = ticket_priority_id
+        if ticket_status_id is not None:
+            filter_params['ticketStatusId'] = ticket_status_id
+        if ticket_source_id is not None:
+            filter_params['ticketSourceId'] = ticket_source_id
+
+        if limit is not None:
+            filter_params['limit'] = limit
+        filter_params['offset'] = offset
+
+        # Standardparameter, können via add_args überschrieben werden
+        filter_params['includeComments'] = 'true'
+        filter_params['includeAssignmentEntity'] = 'true'
+        filter_params['showNullValues'] = 'true'
+
+        if add_args is not None:
+            filter_params.update(add_args)
+
+        retlist = []
+
+        result = self._rest_adapter.get(endpoint='CommunicationRead/Ticket', ep_params=filter_params)
+        for entry in result.data:
+            data = dict(humps.decamelize(entry))
+            data['id_'] = data.pop('id')
+            ret_la = Ticket(**data)
+            retlist.append(ret_la)
+
+        return retlist
+
+    def get_communication_catalogs(self) -> CommunicationCatalog:
+        cat_ass = self._rest_adapter.get(endpoint='CommunicationCatalog/TicketAssignmentEntity').data
+        cat_prio = self._rest_adapter.get(endpoint='CommunicationCatalog/TicketPriority').data
+        cat_source = self._rest_adapter.get(endpoint='CommunicationCatalog/TicketSource').data
+        cat_status = self._rest_adapter.get(endpoint='CommunicationCatalog/TicketStatus').data
+
+        cat_list = [
+            cat_ass,
+            cat_prio,
+            cat_source,
+            cat_status
+        ]
+
+        return CommunicationCatalog(cat_list)
+
+    def create_ticket(self,
+                      subject: str,
+                      content: str,
+                      source_id: int,
+                      main_assignment: TicketAssignment = None,
+                      assignments: List[TicketAssignment] = None,
+                      department_id: int = None,
+                      user_id: int = None,
+                      priority_id: int = 1
+                      ) -> Result:
+        data_dict = {
+            "Subject": subject,
+            "Content": content,
+            "SourceId": source_id,
+            "PriorityId": priority_id,
+        }
+        if department_id is not None:
+            data_dict["DepartmentId"] = department_id
+        if user_id is not None:
+            data_dict["UserId"] = user_id
+
+        data_dict["MainEntityAssignment"] = None
+        if main_assignment is not None:
+            tmain_ass = {
+                "AssignmentEntityId": main_assignment.assignment_entity_id,
+                "EntityId": main_assignment.entity_id
+            }
+            data_dict["MainEntityAssignment"] = tmain_ass
+
+        if assignments is not None and len(assignments) > 0:
+            asslist = []
+            for tentry in assignments:
+                tass = {
+                    "AssignmentEntityId": tentry.assignment_entity_id,
+                    "EntityId": tentry.entity_id
+                }
+                asslist.append(tass)
+            if len(asslist) > 0:
+                data_dict["EntityAssignments"] = asslist
+        print(f"MAIN: {data_dict['MainEntityAssignment']}")
+        result = self._rest_adapter.post(endpoint='CommunicationEdit/Ticket', data=data_dict)
+        return result
+
+    def create_ticket_comment(self,
+                              ticket_id: int,
+                              content: str
+                              ) -> Result:
+        data_dict = {
+            "TicketId": ticket_id,
+            "Content": content
+        }
+
+        result = self._rest_adapter.post(endpoint='CommunicationEdit/Ticket/AddComment', data=data_dict)
+        return result

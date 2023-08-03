@@ -73,8 +73,8 @@ class RestAdapter:
             if "limit" not in ep_params.keys():
                 ep_params["limit"] = 100
 
-        if ep_params.get("limit") > 100 or ep_params.get("limit") < 1:
-            raise WowiPyException("Wert für limit muss zwischen 1 und 100 liegen")
+            if ep_params.get("limit") > 100 or ep_params.get("limit") < 1:
+                raise WowiPyException("Wert für limit muss zwischen 1 und 100 liegen")
         ep_params["apiKey"] = self.api_key
 
         full_url = self.url + endpoint
@@ -103,4 +103,4 @@ class RestAdapter:
             self._logger.debug(msg=log_line)
             return Result(response.status_code, message=response.reason, data=data_out)
         self._logger.error(msg=log_line)
-        raise WowiPyException(f"{response.status_code}: {response.reason}")
+        raise WowiPyException(f"{response.status_code}: {response.reason} -> {response.text}")

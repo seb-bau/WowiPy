@@ -1453,3 +1453,155 @@ class ContractPosition:
             self.contract_position_type_slim = ContractPositionTypeSlim(**contract_position_type_slim)
         else:
             self.contract_position_type_slim = None
+
+
+class TicketComment:
+    id_: int
+    created_at: datetime
+    content: str
+    user_name: str
+
+    def __init__(self, id_: int, created_at: str, content: str, user_name: str) -> None:
+        self.id_ = id_
+        self.created_at = datetime.strptime(created_at, "%Y-%m-%dT%H:%M:%S.%f%z")
+        self.content = content
+        self.user_name = user_name
+
+
+class TicketAssignment:
+    id_: int
+    assignment_entity_id: int
+    assignment_entity_code: str
+    entity_id: int
+
+    def __init__(self,  assignment_entity_id: int, entity_id: int, id_: int = 0,
+                 assignment_entity_code: str = "") -> None:
+        self.id_ = id_
+        self.assignment_entity_id = assignment_entity_id
+        self.assignment_entity_code = assignment_entity_code
+        self.entity_id = entity_id
+
+
+class Ticket:
+    id_: int
+    id_num: str
+    time_received: datetime
+    subject: str
+    content: str
+    department_id: int
+    user_id: int
+    priority_id: int
+    priority_code: str
+    status_id: int
+    status_code: str
+    source_id: int
+    source_code: str
+    comments: Optional[List[TicketComment]]
+    main_assignment: Optional[TicketAssignment]
+    assignments: Optional[List[TicketAssignment]]
+
+    def __init__(self,
+                 id_: int,
+                 id_num: str,
+                 time_received: str,
+                 subject: str,
+                 content: str,
+                 department_id: int,
+                 user_id: int,
+                 priority: Dict,
+                 status: Dict,
+                 source: Dict,
+                 comments: List[Dict],
+                 main_assignment: Dict,
+                 assignment: List[Dict]
+                 ) -> None:
+        self.id_ = id_
+        self.id_num = id_num
+        try:
+            self.time_received = datetime.strptime(time_received, "%Y-%m-%dT%H:%M:%S.%f%z")
+        except ValueError:
+            self.time_received = datetime.strptime(time_received, "%Y-%m-%dT%H:%M:%S%z")
+        self.subject = subject
+        self.content = content
+        self.department_id = department_id
+        self.user_id = user_id
+        self.priority_id = priority["id"]
+        self.priority_code = priority["code"]
+        self.status_id = status["id"]
+        self.status_code = status["code"]
+        self.source_id = source["id"]
+        self.source_code = source["code"]
+
+        self.comments = []
+        if comments is not None and len(comments) > 0:
+            for tentry in comments:
+                try:
+                    tcomment = TicketComment(id_=tentry["id"],
+                                             created_at=tentry["created_at"],
+                                             content=tentry["content"],
+                                             user_name=tentry["user_name"])
+                    self.comments.append(tcomment)
+                except KeyError as e:
+                    print(f"Key error: {e.args}")
+                    continue
+
+        if main_assignment is not None:
+            try:
+                tassignment = TicketAssignment(id_=main_assignment["id"],
+                                               assignment_entity_id=main_assignment["assignment_entity"]["id"],
+                                               assignment_entity_code=main_assignment["assignment_entity"]["code"],
+                                               entity_id=main_assignment["entity_id"])
+                self.main_assignment = tassignment
+            except KeyError as e:
+                print(f"Key error: {e.args}")
+        else:
+            self.main_assignment = None
+
+        # Hinweis: Im JSON lautet dieser Wert "assignment", wir verwenden in der Klasse jedoch "assignments", weil
+        # ich das passender finde
+        self.assignments = []
+        if assignment is not None and len(assignment) > 0:
+            for tentry in assignment:
+                try:
+                    tassignment = TicketAssignment(id_=tentry["id"],
+                                                   assignment_entity_id=tentry["assignment_entity"]["id"],
+                                                   assignment_entity_code=tentry["assignment_entity"]["code"],
+                                                   entity_id=tentry["entity_id"])
+                    self.assignments.append(tassignment)
+                except KeyError as e:
+                    print(f"Key error: {e.args}")
+
+
+class CommunicationCatalog:
+    ticket_assignment_entity_name: Dict
+    ticket_priority_name: Dict
+    ticket_source_name: Dict
+    ticket_status_name: Dict
+    ticket_assignment_entity_id: Dict
+    ticket_priority_id: Dict
+    ticket_source_id: Dict
+    ticket_status_id: Dict
+
+    def __init__(self,
+                 source_catalogues: List[Dict]
+                 ) -> None:
+        dicts = []
+        dicts_rev = []
+        for tcat in source_catalogues:
+            tdict = {}
+            tdict_rev = {}
+            for tentry in tcat:
+                tdict[tentry["Id"]] = tentry["Code"]
+                tdict_rev[tentry["Code"]] = tentry["Id"]
+            dicts.append(tdict)
+            dicts_rev.append(tdict_rev)
+
+        self.ticket_assignment_entity_name = dicts[0]
+        self.ticket_priority_name = dicts[1]
+        self.ticket_source_name = dicts[2]
+        self.ticket_status_name = dicts[3]
+
+        self.ticket_assignment_entity_id = dicts_rev[0]
+        self.ticket_priority_id = dicts_rev[1]
+        self.ticket_source_id = dicts_rev[2]
+        self.ticket_status_id = dicts_rev[3]

@@ -66,13 +66,17 @@ class WowiPy:
                 continue
 
             if search_name is not None:
-                first_name = entry.person.natural_person.first_name.lower()
-                last_name = entry.person.natural_person.last_name.lower()
-                if self.search_string(first_name, search_name, search_mode) or \
-                        self.search_string(last_name, search_name, search_mode):
-                    res.append(entry)
-                    person_ids.append(entry.person.id_)
-                    continue
+                if entry.person.natural_person is not None:
+                    if entry.person.natural_person.first_name is not None:
+                        first_name = entry.person.natural_person.first_name.lower()
+                    else:
+                        first_name = ""
+                    last_name = entry.person.natural_person.last_name.lower()
+                    if self.search_string(first_name, search_name, search_mode) or \
+                            self.search_string(last_name, search_name, search_mode):
+                        res.append(entry)
+                        person_ids.append(entry.person.id_)
+                        continue
 
             if search_address is not None:
                 address: Address

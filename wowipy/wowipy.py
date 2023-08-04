@@ -73,7 +73,9 @@ class WowiPy:
                         first_name = ""
                     last_name = entry.person.natural_person.last_name.lower()
                     if self.search_string(first_name, search_name, search_mode) or \
-                            self.search_string(last_name, search_name, search_mode):
+                            self.search_string(last_name, search_name, search_mode) or \
+                            self.search_string(f"{first_name} {last_name}", search_name, search_mode) or \
+                            self.search_string(f"{last_name}, {first_name}", search_name, search_mode):
                         res.append(entry)
                         person_ids.append(entry.person.id_)
                         continue

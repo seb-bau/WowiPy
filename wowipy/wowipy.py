@@ -54,7 +54,7 @@ class WowiPy:
 
     def search_contractor(self, search_name: str = None, search_address: str = None, search_phone: str = None,
                           search_email: str = None, max_results: int = 10,
-                          search_mode: str = SEARCH_POS_CONTAINS) -> List:
+                          search_mode: str = SEARCH_POS_CONTAINS, allow_duplicates: bool = False) -> List:
         person_ids = []
         res = []
         entry: Contractor
@@ -62,7 +62,7 @@ class WowiPy:
             if len(res) >= max_results:
                 break
 
-            if entry.person.id_ in person_ids:
+            if entry.person.id_ in person_ids and not allow_duplicates:
                 continue
 
             if search_name is not None:

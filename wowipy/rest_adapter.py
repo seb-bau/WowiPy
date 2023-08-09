@@ -2,6 +2,7 @@ import logging
 
 import requests
 import requests.packages
+import requests_cache
 from typing import Dict
 from wowipy.exceptions import WowiPyException
 from wowipy.models import Result
@@ -28,6 +29,7 @@ class RestAdapter:
         :param logger: Logger Object
         :type logger: Logger
         """
+        requests_cache.install_cache(backend='memory', expire_after=10800)
         self._logger = logger or logging.getLogger(__name__)
         self.host_base = hostname
         self.url = f"https://{hostname}/openwowi/{version}/"

@@ -2,7 +2,7 @@ from setuptools import setup
 
 setup(
     name='wowipy',
-    version='1.1.12',
+    version='1.1.13',
     description='OPENWOWI Wowiport API wrapper for python',
     url='https://github.com/seb-bau/WowiPy',
     author='Sebastian Bauhaus',

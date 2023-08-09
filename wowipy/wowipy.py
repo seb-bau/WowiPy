@@ -634,7 +634,6 @@ class WowiPy:
                 data = dict(humps.decamelize(entry))
                 data['id_'] = data.pop('id')
                 data.get('estate_address')['zip_'] = data.get('estate_address').pop('zip')
-                print(data)
                 ret_la = BuildingLand(**data)
                 retlist.append(ret_la)
         return retlist

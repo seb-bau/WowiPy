@@ -600,6 +600,7 @@ class WowiPy:
 
         # Ein paar Standardwerte, können aber durch add_args überschrieben werden
         filter_params['includeCompanyCode'] = 'true'
+        filter_params['showNullValues'] = 'true'
 
         if add_args is not None:
             filter_params.update(add_args)
@@ -633,6 +634,7 @@ class WowiPy:
                 data = dict(humps.decamelize(entry))
                 data['id_'] = data.pop('id')
                 data.get('estate_address')['zip_'] = data.get('estate_address').pop('zip')
+                print(data)
                 ret_la = BuildingLand(**data)
                 retlist.append(ret_la)
         return retlist
@@ -780,6 +782,7 @@ class WowiPy:
         filter_params['includeUseUnitTypes'] = 'true'
         filter_params['includeBillingUnits'] = 'true'
         filter_params['includeMarketingTags'] = 'false'
+        filter_params['showNullValues'] = 'true'
 
         if add_args is not None:
             filter_params.update(add_args)

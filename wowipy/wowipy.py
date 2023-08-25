@@ -951,7 +951,6 @@ class WowiPy:
                         workaround_is_nat_person = True
                 data['is_natural_person'] = workaround_is_nat_person
                 # Workaround für natürliche Person Ende
-                print(data)
                 ret_per = Person(**data)
                 retlist.append(ret_per)
         return retlist

@@ -54,6 +54,95 @@ class WowiPy:
         else:
             return False
 
+    def check_person_match(self, person_obj: Person,
+                           search_name: str = None,
+                           search_address: str = None,
+                           search_phone: str = None,
+                           search_email: str = None,
+                           search_mode: str = SEARCH_POS_CONTAINS) -> bool:
+        if person_obj is None:
+            return False
+
+        if search_name is not None:
+            if person_obj.natural_person is not None:
+                if person_obj.natural_person.last_name is not None:
+                    if person_obj.natural_person.first_name is not None:
+                        first_name = person_obj.natural_person.first_name.lower()
+                    else:
+                        first_name = ""
+                    last_name = person_obj.natural_person.last_name.lower()
+                    if self.search_string(first_name, search_name, search_mode) or \
+                            self.search_string(last_name, search_name, search_mode) or \
+                            self.search_string(f"{first_name} {last_name}", search_name, search_mode) or \
+                            self.search_string(f"{last_name}, {first_name}", search_name, search_mode):
+                        return True
+            if person_obj.legal_person is not None:
+                if person_obj.legal_person.long_name1 is not None:
+                    if self.search_string(person_obj.legal_person.long_name1, search_name, search_mode):
+                        return True
+
+        if search_address is not None:
+            address: Address
+            address_found = False
+            if person_obj.addresses is not None:
+                for address in person_obj.addresses:
+                    street = address.street_complete
+                    if self.search_string(street, search_address, search_mode):
+                        address_found = True
+                        break
+            if address_found:
+                return True
+
+        if search_phone is not None:
+            communication: Communication
+            phone_found = False
+            if person_obj.communications is None:
+                return False
+            for comm in person_obj.communications:
+                if comm.communication_type.name == "Festnetz" or comm.communication_type.name == "Handynummer":
+                    content = comm.content.strip()
+                    search_phone = search_phone.strip()
+                    # Problem: Es gibt diverse gängige Formate für Rufnummern. Es gibt keine Formatvorgabe in
+                    # Wowiport, also können wir auch nicht vorhersehen, welches gewählt wurde.
+                    # Wenn ein + gefunden wurde, werden die ersten drei Zeichen von needle und haystack entfernt.
+                    # Ansonsten werden alle führenden Nullen entfernt
+                    if content.startswith('+'):
+                        content = content[3:]
+                    if search_phone.startswith('+'):
+                        search_phone = search_phone[3:]
+                    if search_phone.startswith('0049'):
+                        search_phone = search_phone[4:]
+                    if content.startswith('0049'):
+                        content = content[4:]
+
+                    content = content.lstrip('0')
+                    search_phone = search_phone.lstrip('0')
+
+                    content = content.replace(' ', '')
+                    search_phone = search_phone.replace(' ', '')
+
+                    if self.search_string(content, search_phone, search_mode):
+                        phone_found = True
+                        break
+            if phone_found:
+                return True
+
+        if search_email is not None:
+            communication: Communication
+            email_found = False
+            if person_obj.communications is None:
+                return False
+            for comm in person_obj.communications:
+                if comm.communication_type.name == "E-Mail":
+                    content = comm.content.strip()
+                    if self.search_string(content, search_email, search_mode):
+                        email_found = True
+                        break
+            if email_found:
+                return True
+
+        return False
+
     def search_contractor(self, search_name: str = None, search_address: str = None, search_phone: str = None,
                           search_email: str = None, max_results: int = 10,
                           search_mode: str = SEARCH_POS_CONTAINS, allow_duplicates: bool = False) -> List:
@@ -67,85 +156,33 @@ class WowiPy:
             if entry.person.id_ in person_ids and not allow_duplicates:
                 continue
 
-            if search_name is not None:
-                if entry.person.natural_person is not None:
-                    if entry.person.natural_person.first_name is not None:
-                        first_name = entry.person.natural_person.first_name.lower()
-                    else:
-                        first_name = ""
-                    last_name = entry.person.natural_person.last_name.lower()
-                    if self.search_string(first_name, search_name, search_mode) or \
-                            self.search_string(last_name, search_name, search_mode) or \
-                            self.search_string(f"{first_name} {last_name}", search_name, search_mode) or \
-                            self.search_string(f"{last_name}, {first_name}", search_name, search_mode):
-                        res.append(entry)
-                        person_ids.append(entry.person.id_)
-                        continue
+            if self.check_person_match(person_obj=entry.person,
+                                       search_name=search_name,
+                                       search_address=search_address,
+                                       search_phone=search_phone,
+                                       search_email=search_email,
+                                       search_mode=search_mode):
+                res.append(entry)
+                person_ids.append(entry.person.id_)
 
-            if search_address is not None:
-                address: Address
-                address_found = False
-                for address in entry.person.addresses:
-                    street = address.street_complete
-                    if self.search_string(street, search_address, search_mode):
-                        address_found = True
-                        break
-                if address_found:
-                    res.append(entry)
-                    person_ids.append(entry.person.id_)
-                    continue
+        return res
 
-            if search_phone is not None:
-                communication: Communication
-                phone_found = False
-                if entry.person.communications is None:
-                    continue
-                for comm in entry.person.communications:
-                    if comm.communication_type.name == "Festnetz" or comm.communication_type.name == "Handynummer":
-                        content = comm.content.strip()
-                        search_phone = search_phone.strip()
-                        # Problem: Es gibt diverse gängige Formate für Rufnummern. Es gibt keine Formatvorgabe in
-                        # Wowiport, also können wir auch nicht vorhersehen, welches gewählt wurde.
-                        # Wenn ein + gefunden wurde, werden die ersten drei Zeichen von needle und haystack entfernt.
-                        # Ansonsten werden alle führenden Nullen entfernt
-                        if content.startswith('+'):
-                            content = content[3:]
-                        if search_phone.startswith('+'):
-                            search_phone = search_phone[3:]
-                        if search_phone.startswith('0049'):
-                            search_phone = search_phone[4:]
-                        if content.startswith('0049'):
-                            content = content[4:]
+    def search_person(self, search_name: str = None, search_address: str = None, search_phone: str = None,
+                      search_email: str = None, max_results: int = 10,
+                      search_mode: str = SEARCH_POS_CONTAINS) -> List:
+        res = []
+        entry: Person
+        for entry in self._cache.get(self.CACHE_PERSONS):
+            if len(res) >= max_results:
+                break
 
-                        content = content.lstrip('0')
-                        search_phone = search_phone.lstrip('0')
-
-                        content = content.replace(' ', '')
-                        search_phone = search_phone.replace(' ', '')
-
-                        if self.search_string(content, search_phone, search_mode):
-                            phone_found = True
-                            break
-                if phone_found:
-                    res.append(entry)
-                    person_ids.append(entry.person.id_)
-                    continue
-
-            if search_email is not None:
-                communication: Communication
-                email_found = False
-                if entry.person.communications is None:
-                    continue
-                for comm in entry.person.communications:
-                    if comm.communication_type.name == "E-Mail":
-                        content = comm.content.strip()
-                        if self.search_string(content, search_email, search_mode):
-                            email_found = True
-                            break
-                if email_found:
-                    res.append(entry)
-                    person_ids.append(entry.person.id_)
-                    continue
+            if self.check_person_match(person_obj=entry,
+                                       search_name=search_name,
+                                       search_address=search_address,
+                                       search_phone=search_phone,
+                                       search_email=search_email,
+                                       search_mode=search_mode):
+                res.append(entry)
 
         return res
 

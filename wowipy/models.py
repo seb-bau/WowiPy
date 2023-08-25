@@ -799,13 +799,16 @@ class NaturalPerson:
     first_name: str
     last_name: str
     birth_date: datetime
-    gender: Gender
+    gender: Optional[Gender]
 
-    def __init__(self, first_name: str, last_name: str, birth_date: datetime, gender: Dict) -> None:
+    def __init__(self, first_name: str, last_name: str, birth_date: datetime, gender: Dict = None) -> None:
         self.first_name = first_name
         self.last_name = last_name
         self.birth_date = birth_date
-        self.gender = Gender(**gender)
+        if gender is not None:
+            self.gender = Gender(**gender)
+        else:
+            self.gender = None
 
 
 class Person:
@@ -854,7 +857,7 @@ class Person:
         else:
             self.legal_person = None
         taddresses = []
-        if len(addresses) > 0:
+        if addresses is not None and len(addresses) > 0:
             for entry in addresses:
                 entry["id_"] = entry.pop("id")
                 entry["zip_"] = entry.pop("zip")

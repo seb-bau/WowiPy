@@ -11,6 +11,7 @@ from wowipy.models import *
 class WowiPy:
     CACHE_LICENSE_AGREEMENTS = "license_agreements"
     CACHE_CONTRACTORS = "contractors"
+    CACHE_PERSONS = "persons"
     CACHE_ECONOMIC_UNITS = "license_agreements"
     CACHE_BUILDING_LANDS = "building_lands"
     CACHE_USE_UNITS = "use_units"
@@ -24,6 +25,7 @@ class WowiPy:
         self._cache = {
             self.CACHE_LICENSE_AGREEMENTS: [],
             self.CACHE_CONTRACTORS: [],
+            self.CACHE_PERSONS: [],
             self.CACHE_USE_UNITS: [],
             self.CACHE_BUILDING_LANDS: [],
             self.CACHE_ECONOMIC_UNITS: []
@@ -376,6 +378,26 @@ class WowiPy:
             print(f"Contractors {len(ret_list)}")
 
         self._cache[self.CACHE_CONTRACTORS] = ret_list
+
+    def build_person_cache(self,
+                           person_id: int = None,
+                           add_args: Dict = None) -> None:
+
+        limit = 100
+        offset = 0
+        ret_list = self.get_persons(person_id=person_id,
+                                    add_args=add_args, limit=limit, offset=offset)
+        response_len = len(ret_list)
+
+        while response_len == limit:
+            offset += limit
+            t_resp = self.get_persons(person_id=person_id,
+                                      add_args=add_args, limit=limit, offset=offset)
+            response_len = len(t_resp)
+            ret_list = ret_list + t_resp
+            print(f"Persons {len(ret_list)}")
+
+        self._cache[self.CACHE_PERSONS] = ret_list
 
     def get_license_agreements(self,
                                economic_unit_idnum: str = None,
@@ -878,6 +900,60 @@ class WowiPy:
                 data['id_'] = data.pop('id')
                 ret_la = Contractor(**data)
                 retlist.append(ret_la)
+        return retlist
+
+    def get_persons(self,
+                    person_id: int = None,
+                    limit: int = None,
+                    offset: int = 0,
+                    add_args: Dict = None,
+                    use_cache: bool = False) -> List[Person]:
+
+        filter_params = {}
+        if person_id is not None:
+            filter_params['personId'] = person_id
+        if limit is not None:
+            filter_params['limit'] = limit
+        filter_params['offset'] = offset
+
+        # Standardparameter, können via add_args überschrieben werden
+        filter_params['includeAddress'] = 'true'
+        filter_params['includeCommunication'] = 'true'
+        filter_params['includeBankccount'] = 'true'
+        filter_params['showNullValues'] = 'true'
+
+        if add_args is not None:
+            filter_params.update(add_args)
+
+        retlist = []
+        if use_cache:
+            cache_entry: Person
+            for cache_entry in self._cache[self.CACHE_PERSONS]:
+                if person_id is not None and cache_entry.id_ == person_id:
+                    retlist.append(copy.deepcopy(cache_entry))
+        else:
+            result = self._rest_adapter.get(endpoint='PersonsRead/Persons', ep_params=filter_params)
+
+            for entry in result.data:
+                data = dict(humps.decamelize(entry))
+                data['id_'] = data.pop('id')
+                data['shortname'] = data.pop('short_name')
+
+                # Der nächste Part ist notwendig, weil das Ergebnis der Route aktuell leicht von der Doku abweicht.
+                # Laut Doku gibt es das Feld IsNaturalPerson (bool), dieses wird aber nicht ausgegeben.
+                # Der Workaround ist nun das Auslesen von NaturalPerson[Gender]. Steht es auf id 3 (nicht angegeben),
+                # wird die Person als "nicht natürlich" angesehen.
+                workaround_is_nat_person = False
+                workaround_gender = data['natural_person'].get("gender")
+                if workaround_gender is not None:
+                    workaround_gender_id = int(workaround_gender.get("id"))
+                    if workaround_gender_id != 3:
+                        workaround_is_nat_person = True
+                data['is_natural_person'] = workaround_is_nat_person
+                # Workaround für natürliche Person Ende
+                print(data)
+                ret_per = Person(**data)
+                retlist.append(ret_per)
         return retlist
 
     def get_contract_positions(self,

@@ -1121,11 +1121,13 @@ class BuildingLand:
     land: Optional[Land]
     building: Building
     exit_reason: Optional[ExitReason]
+    company_code: Optional[CompanyCode]
 
     def __init__(self, id_: int, id_num: str, building_land_type: int, entry_date: datetime,
                  economic_unit: Dict,
                  estate_address: Dict, building: Dict, land: Dict = None,
-                 exit_date: datetime = None, exit_reason: Dict = None, **kwargs) -> None:
+                 exit_date: datetime = None, exit_reason: Dict = None, company_code: Dict = None,
+                 **kwargs) -> None:
         self.id_ = id_
         self.id_num = id_num
         self.building_land_type = building_land_type
@@ -1143,6 +1145,11 @@ class BuildingLand:
             self.exit_reason = ExitReason(**exit_reason)
         else:
             self.exit_reason = None
+        if company_code is not None:
+            company_code['id_'] = company_code.pop('id')
+            self.company_code = CompanyCode(**company_code)
+        else:
+            self.company_code = None
         self.__dict__.update(kwargs)
 
 

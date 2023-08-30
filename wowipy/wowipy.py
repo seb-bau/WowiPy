@@ -219,6 +219,41 @@ class WowiPy:
 
         return res
 
+    def search_building(self, search_address: str = None,
+                        filter_idnum_above: int = 0,
+                        max_results: int = 10,
+                        search_mode: str = SEARCH_POS_CONTAINS) -> List:
+        res = []
+        entry: BuildingLand
+        search_address = search_address.replace(" ", "").strip()
+        for entry in self._cache.get(self.CACHE_BUILDING_LANDS):
+            if filter_idnum_above > 0:
+                entry_idnum = entry.id_num
+                if entry_idnum is not None:
+                    entry_idnum_parts = entry_idnum.split(".")
+                    building_idnum = entry_idnum_parts[-1]
+                    try:
+                        building_idnum_int = int(building_idnum)
+                        if building_idnum_int > filter_idnum_above:
+                            continue
+                    except ValueError:
+                        pass
+
+            if len(res) >= max_results:
+                break
+
+            if search_address is not None:
+                address: Address
+                if entry.estate_address is not None:
+                    street = entry.estate_address.street_complete.replace(" ", "").strip()
+                    if self.search_string(street, search_address, search_mode):
+                        res.append(entry)
+                        continue
+                    elif self.search_string(street, search_address.replace("str.", "straße"), search_mode):
+                        res.append(entry)
+                        continue
+        return res
+
     def build_license_agreement_cache(self,
                                       economic_unit_idnum: str = None,
                                       use_unit_idnum: str = None,

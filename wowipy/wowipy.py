@@ -249,7 +249,8 @@ class WowiPy:
                     if self.search_string(street, search_address, search_mode):
                         res.append(entry)
                         continue
-                    elif self.search_string(street, search_address.replace("str.", "straße"), search_mode):
+                    elif self.search_string(street, search_address.replace("str.", "straße").replace("Str.", "Straße"),
+                                            search_mode):
                         res.append(entry)
                         continue
         return res

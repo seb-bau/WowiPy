@@ -607,26 +607,11 @@ class WowiPy:
                            management_idnum: str = None,
                            owner_number: str = None,
                            economic_idnum: str = None,
+                           economic_id: int = None,
                            limit: int = None,
                            offset: int = 0,
                            add_args: Dict = None) -> List[EconomicUnit]:
-        """
-        Gitb eine Liste mit Wirtschaftseinheiten zurück
-        :param offset: Verschiebung der Abfrage. Default: 0
-        :type offset: int
-        :param management_idnum: (Optional) Nur Wirtschaftseinheiten dieses Managements zurückgeben
-        :type management_idnum: str
-        :param owner_number: (Optional) Nur Wirtschaftseinheiten dieses Besitzers zurückgeben
-        :type owner_number: str
-        :param economic_idnum: (Optional) Nur die Wirtschaftseinheit mit dieser Nummer zurückgeben
-        :type economic_idnum: str
-        :param limit: Maximale Anzahl an zurückgegebenen Einträgen (max = default = 100)
-        :type limit: int
-        :param add_args: Zusätzliche Parameter, die per GET an die URL angehängt werden
-        :type add_args: Dict
-        :return: Liste mit Wirtschaftseinheiten (auch bei nur einem Ergebnis!)
-        :rtype: List[EconomicUnit]
-        """
+
         filter_params = {}
         if management_idnum is not None:
             filter_params['managementIdNum'] = management_idnum
@@ -634,6 +619,8 @@ class WowiPy:
             filter_params['ownerNumber'] = owner_number
         if economic_idnum is not None:
             filter_params['economicIdNum'] = economic_idnum
+        if economic_id is not None:
+            filter_params['economicId'] = economic_id
         if limit is not None:
             filter_params['limit'] = limit
         filter_params['offset'] = offset
@@ -1209,3 +1196,104 @@ class WowiPy:
 
         result = self._rest_adapter.post(endpoint='CommunicationEdit/Ticket/AddComment', data=data_dict)
         return result
+
+    def get_economic_unit_jurisdictions(self,
+                                        economic_unit_id: int = None,
+                                        limit: int = None,
+                                        offset: int = 0,
+                                        add_args: Dict = None,
+                                        fetch_all: bool = False
+                                        ) -> List[EconomicUnitJurisdiction]:
+
+        filter_params = {}
+        if economic_unit_id is not None:
+            filter_params['economicUnitId'] = economic_unit_id
+
+        if limit is not None:
+            filter_params['limit'] = limit
+        filter_params['offset'] = offset
+
+        # Standardparameter, können via add_args überschrieben werden
+        filter_params['showNullValues'] = 'true'
+
+        if add_args is not None:
+            filter_params.update(add_args)
+
+        retlist = []
+
+        if not fetch_all:
+            result = self._rest_adapter.get(endpoint='CommercialInventory/EconomicUnit/Jurisdiction',
+                                            ep_params=filter_params)
+        else:
+            result = Result(0, "", [])
+            merge_schema = {"mergeStrategy": "append"}
+            merger = Merger(schema=merge_schema)
+            filter_params['offset'] = 0
+            filter_params['limit'] = 100
+            response_count = 100
+            while response_count == 100:
+                part_result = self._rest_adapter.get(endpoint='CommercialInventory/EconomicUnit/Jurisdiction',
+                                                     ep_params=filter_params)
+                result.data = merger.merge(result.data, part_result.data)
+                filter_params['offset'] += 100
+                response_count = len(part_result.data)
+                print(f"Eco-Jurisdiction-Count: {len(result.data)}")
+
+        for entry in result.data:
+            data = dict(humps.decamelize(entry))
+            ret_la = EconomicUnitJurisdiction(**data)
+            retlist.append(ret_la)
+
+        return retlist
+
+    def get_use_unit_jurisdictions(self,
+                                   use_unit_id: int = None,
+                                   economic_unit_id: int = None,
+                                   limit: int = None,
+                                   offset: int = 0,
+                                   add_args: Dict = None,
+                                   fetch_all: bool = False
+                                   ) -> List[UseUnitJurisdiction]:
+
+        filter_params = {}
+        if economic_unit_id is not None:
+            filter_params['economicUnitId'] = economic_unit_id
+        if use_unit_id is not None:
+            filter_params['useUnitId'] = use_unit_id
+
+        if limit is not None:
+            filter_params['limit'] = limit
+        filter_params['offset'] = offset
+
+        # Standardparameter, können via add_args überschrieben werden
+        filter_params['showNullValues'] = 'true'
+
+        if add_args is not None:
+            filter_params.update(add_args)
+
+        retlist = []
+
+        if not fetch_all:
+            result = self._rest_adapter.get(endpoint='CommercialInventory/UseUnit/Jurisdiction',
+                                            ep_params=filter_params)
+        else:
+            result = Result(0, "", [])
+            merge_schema = {"mergeStrategy": "append"}
+            merger = Merger(schema=merge_schema)
+            filter_params['offset'] = 0
+            filter_params['limit'] = 100
+            response_count = 100
+            while response_count == 100:
+                part_result = self._rest_adapter.get(endpoint='CommercialInventory/UseUnit/Jurisdiction',
+                                                     ep_params=filter_params)
+                result.data = merger.merge(result.data, part_result.data)
+                filter_params['offset'] += 100
+                response_count = len(part_result.data)
+                print(f"UseUnit-Jurisdiction-Count: {len(result.data)}")
+
+        for entry in result.data:
+            data = dict(humps.decamelize(entry))
+            ret_la = UseUnitJurisdiction(**data)
+            retlist.append(ret_la)
+
+        return retlist

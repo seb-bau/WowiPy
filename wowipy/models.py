@@ -1631,3 +1631,100 @@ class CommunicationCatalog:
         self.ticket_priority_id = dicts_rev[1]
         self.ticket_source_id = dicts_rev[2]
         self.ticket_status_id = dicts_rev[3]
+
+
+class ResponsibleOfficial:
+    id_: int
+    code_short: str
+    automatic_mails_activated: bool
+    universal_responsibility_possible: bool
+    person_id: int
+    person_name: str
+
+    def __init__(self, id_: int, code_short: str, automatic_mails_activated: bool,
+                 universal_responsibility_possible: bool, person_id: int, person_name: str):
+        self.id_ = id_
+        self.code_short = code_short
+        self.automatic_mails_activated = automatic_mails_activated
+        self.universal_responsibility_possible = universal_responsibility_possible
+        self.person_id = person_id
+        self.person_name = person_name
+
+
+class JurisdictionListEntry:
+    id_: int
+    main_jurisdiction: bool
+    responsible_official: ResponsibleOfficial
+    department_type_id: int
+    department_type_name: str
+
+    def __init__(self, id_: int, main_jurisdiction: bool, responsible_official: dict,
+                 department_type: dict):
+        self.id_ = id_
+        self.main_jurisdiction = main_jurisdiction
+        responsible_official["id_"] = responsible_official.pop("id")
+        self.responsible_official = ResponsibleOfficial(**responsible_official)
+        self.department_type_id = department_type.get("id")
+        self.department_type_name = department_type.get("name")
+
+
+class UseUnitJurisdiction:
+    use_unit: UseUnitShort
+    use_unit_universal_responsibility: bool
+    use_unit_universal_responsible_official: Optional[ResponsibleOfficial]
+    economic_unit_universal_responsibility: bool
+    economic_unit_universal_responsible_official: Optional[ResponsibleOfficial]
+    use_unit_jurisdiction_list: List[JurisdictionListEntry]
+
+    def __init__(self, use_unit: dict, use_unit_universal_responsibility: bool,
+                 use_unit_universal_responsible_official: dict, economic_unit_universal_responsibility: bool,
+                 economic_unit_universal_responsible_official, use_unit_jurisdiction_list: List[Dict]):
+        use_unit["id_"] = use_unit.pop("id")
+        self.use_unit = UseUnitShort(**use_unit)
+        self.use_unit_universal_responsibility = use_unit_universal_responsibility
+        if use_unit_universal_responsible_official is not None:
+            use_unit_universal_responsible_official["id_"] = use_unit_universal_responsible_official.pop("id")
+            self.use_unit_universal_responsible_official = ResponsibleOfficial(
+                **use_unit_universal_responsible_official)
+        else:
+            self.use_unit_universal_responsible_official = None
+
+        self.economic_unit_universal_responsibility = economic_unit_universal_responsibility
+        if economic_unit_universal_responsible_official is not None:
+            economic_unit_universal_responsible_official["id_"] = economic_unit_universal_responsible_official.pop("id")
+            self.economic_unit_universal_responsible_official = ResponsibleOfficial(
+                **economic_unit_universal_responsible_official)
+        else:
+            self.economic_unit_universal_responsible_official = None
+
+        self.use_unit_jurisdiction_list = []
+        if use_unit_jurisdiction_list is not None and len(use_unit_jurisdiction_list) > 0:
+            for juris_entry in use_unit_jurisdiction_list:
+                juris_entry["id_"] = juris_entry.pop("id")
+                new_juris_entry = JurisdictionListEntry(**juris_entry)
+                self.use_unit_jurisdiction_list.append(new_juris_entry)
+
+
+class EconomicUnitJurisdiction:
+    economic_unit: EconomicUnitShort
+    economic_unit_universal_responsibility: bool
+    economic_unit_universal_responsible_official: Optional[ResponsibleOfficial]
+    economic_unit_jurisdiction_list: List[JurisdictionListEntry]
+
+    def __init__(self, economic_unit: dict, economic_unit_universal_responsibility: bool,
+                 economic_unit_universal_responsible_official, economic_unit_jurisdiction_list: List[Dict]):
+        economic_unit["id_"] = economic_unit.pop("id")
+        self.economic_unit = EconomicUnitShort(**economic_unit)
+        self.economic_unit_universal_responsibility = economic_unit_universal_responsibility
+        if economic_unit_universal_responsible_official is not None:
+            economic_unit_universal_responsible_official["id_"] = economic_unit_universal_responsible_official.pop("id")
+            self.economic_unit_universal_responsible_official = ResponsibleOfficial(
+                **economic_unit_universal_responsible_official)
+        else:
+            self.economic_unit_universal_responsible_official = None
+        self.economic_unit_jurisdiction_list = []
+        if economic_unit_jurisdiction_list is not None and len(economic_unit_jurisdiction_list) > 0:
+            for juris_entry in economic_unit_jurisdiction_list:
+                juris_entry["id_"] = juris_entry.pop("id")
+                new_juris_entry = JurisdictionListEntry(**juris_entry)
+                self.economic_unit_jurisdiction_list.append(new_juris_entry)

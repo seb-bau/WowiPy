@@ -21,8 +21,8 @@ class WowiPy:
     SEARCH_POS_CONTAINS = "contains"
 
     def __init__(self, hostname: str, user: str, password: str, api_key: str, version: str = 'v1.2',
-                 logger: logging.Logger = None):
-        self._rest_adapter = RestAdapter(hostname, user, password, api_key, version, logger)
+                 logger: logging.Logger = None, user_agent: str = "WowiPy/1.1"):
+        self._rest_adapter = RestAdapter(hostname, user, password, api_key, version, logger, user_agent)
         self._cache = {
             self.CACHE_LICENSE_AGREEMENTS: [],
             self.CACHE_CONTRACTORS: [],

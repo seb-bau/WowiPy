@@ -2,6 +2,7 @@ import logging
 
 import requests
 import requests.packages
+import requests.utils
 import requests_cache
 from typing import Dict
 from wowipy.exceptions import WowiPyException
@@ -13,7 +14,7 @@ class RestAdapter:
     logger = logging.getLogger(__name__)
 
     def __init__(self, hostname: str, user: str, password: str, api_key: str, version: str = 'v1.2',
-                 logger: logging.Logger = None):
+                 logger: logging.Logger = None, user_agent: str = None):
         """
         Constructor for RestAdapter
         :param hostname: OPENWOWI-Hostname without trailing slash, e.g. customer.wowiport.de
@@ -30,6 +31,10 @@ class RestAdapter:
         :type logger: Logger
         """
         requests_cache.install_cache(backend='memory', expire_after=10800)
+        if user_agent is None:
+            self.user_agent = requests.utils.default_headers().get('User-Agent')
+        else:
+            self.user_agent = user_agent
         self._logger = logger or logging.getLogger(__name__)
         self.host_base = hostname
         self.url = f"https://{hostname}/openwowi/{version}/"
@@ -45,6 +50,7 @@ class RestAdapter:
                   f"username={self.user}&" \
                   f"password={self.password}"
         headers = {
+            'User-Agent': self.user_agent,
             'Accept': 'text/plain',
             'Content-Type': 'application/x-www-form-urlencoded'
         }
@@ -81,6 +87,7 @@ class RestAdapter:
 
         full_url = self.url + endpoint
         headers = {
+            'User-Agent': self.user_agent,
             'Accept': 'text/plain',
             'Authorization': f'Bearer {self.token}'
         }

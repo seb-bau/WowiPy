@@ -598,21 +598,37 @@ class PaymentOrderElement:
 class TaxSubtotal:
     net: int
     vat: int
-    tax: CraftActivity
+    tax_id: int
+    tax_code: str
 
-    def __init__(self, net: int, vat: int, tax: CraftActivity) -> None:
+    def __init__(self, net: int, vat: int, tax_id: int, tax_code: str) -> None:
         self.net = net
         self.vat = vat
-        self.tax = tax
+        self.tax_id = tax_id
+        self.tax_code = tax_code
 
 
 class TaxTotal:
     tax_amount: int
-    tax_subtotal: List[TaxSubtotal]
+    tax_subtotals: List[TaxSubtotal]
 
-    def __init__(self, tax_amount: int, tax_subtotal: List[TaxSubtotal]) -> None:
+    def __init__(self, tax_amount: int, tax_subtotals: List[Dict]) -> None:
         self.tax_amount = tax_amount
-        self.tax_subtotal = tax_subtotal
+        self.tax_subtotals = []
+        if tax_subtotals is not None:
+            for subtotal_entry in tax_subtotals:
+                ttax_item = subtotal_entry.get("tax")
+                if ttax_item is not None:
+                    ttax_id = ttax_item.get("id")
+                    ttax_code = ttax_item.get("code")
+                else:
+                    ttax_id = -1
+                    ttax_code = ""
+                subtotal_obj = TaxSubtotal(subtotal_entry.get("net"),
+                                           subtotal_entry.get("vat"),
+                                           ttax_id,
+                                           ttax_code)
+                self.tax_subtotals.append(subtotal_obj)
 
 
 class MonetaryTotal:

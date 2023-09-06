@@ -15,6 +15,7 @@ class WowiPy:
     CACHE_ECONOMIC_UNITS = "license_agreements"
     CACHE_BUILDING_LANDS = "building_lands"
     CACHE_USE_UNITS = "use_units"
+    CACHE_CONTRACT_POSITIONS = "contract_positions"
 
     SEARCH_POS_LEFT = "begins"
     SEARCH_POS_CONTAINS = "contains"
@@ -293,6 +294,12 @@ class WowiPy:
 
         self._cache[self.CACHE_LICENSE_AGREEMENTS] = ret_list
 
+    def build_contract_position_cache(self,
+                                      contract_position_active_on: datetime = None) -> None:
+
+        all_positions = self.get_all_contract_positions(contract_positions_active_on=contract_position_active_on)
+        self._cache[self.CACHE_CONTRACT_POSITIONS] = all_positions
+
     def build_economic_unit_cache(self,
                                   management_idnum: str = None,
                                   owner_number: str = None,
@@ -532,9 +539,9 @@ class WowiPy:
             for cache_entry in self._cache[self.CACHE_LICENSE_AGREEMENTS]:
                 if (economic_unit_idnum is not None and cache_entry.use_unit.economic_unit == economic_unit_idnum) or \
                         (use_unit_idnum is not None and cache_entry.use_unit.use_unit_number == use_unit_idnum) or \
-                        (license_agreement_idnum is not None and cache_entry.id_num == license_agreement_idnum):
+                        (license_agreement_idnum is not None and cache_entry.id_num == license_agreement_idnum) or \
+                        (economic_unit_idnum is None and use_unit_idnum is None and license_agreement_idnum is None):
                     if add_contractors:
-                        print(cache_entry.id_)
                         cache_entry.contractors = self.get_contractors(license_agreement_id=cache_entry.id_,
                                                                        use_cache=True)
                     retlist.append(copy.deepcopy(cache_entry))
@@ -1027,6 +1034,29 @@ class WowiPy:
                 ret_per = Person(**data)
                 retlist.append(ret_per)
         return retlist
+
+    def get_all_contract_positions(self,
+                                   contract_positions_active_on: datetime = None,
+                                   use_cache: bool = False) -> List[ContractPosition]:
+        if use_cache:
+            return self._cache[self.CACHE_CONTRACT_POSITIONS]
+
+        result = Result(0, "", [])
+        merge_schema = {"mergeStrategy": "append"}
+        merger = Merger(schema=merge_schema)
+        offset = 0
+        limit = 100
+        response_count = 100
+
+        while response_count == 100:
+            part_result = self.get_contract_positions(contract_positions_active_on=contract_positions_active_on,
+                                                      limit=limit, offset=offset)
+            result.data = merger.merge(result.data, part_result)
+            offset += 100
+            response_count = len(part_result)
+            print(f"Contract Position Count: {len(result.data)}")
+
+        return result.data
 
     def get_contract_positions(self,
                                license_agreement_idnum: str = None,

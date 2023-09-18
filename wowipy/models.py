@@ -397,6 +397,17 @@ class UseUnitUsageType:
         self.classification_name = classification_name
 
 
+class UseUnitTypeCatalogEntry:
+    id_: int
+    name: str
+    classification: str
+
+    def __init__(self, id_: int, name: str, classification: str):
+        self.id_ = id_
+        self.name = name
+        self.classification = classification
+
+
 class UseUnitType:
     id_: int
     valid_from: datetime

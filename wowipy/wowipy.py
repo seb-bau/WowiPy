@@ -1061,6 +1061,42 @@ class WowiPy:
 
         return result.data
 
+    def get_districts(self) -> List[District]:
+        retlist = []
+        result = self._rest_adapter.get(endpoint='CommercialInventoryCatalog/Districts')
+
+        for entry in result.data:
+            data = dict(humps.decamelize(entry))
+            data['id_'] = data.pop('id')
+            ret_la = District(**data)
+            retlist.append(ret_la)
+
+        return retlist
+
+    def get_building_types(self) -> List[BuildingType]:
+        retlist = []
+        result = self._rest_adapter.get(endpoint='CommercialInventoryCatalog/BuildingTypes')
+
+        for entry in result.data:
+            data = dict(humps.decamelize(entry))
+            data['id_'] = data.pop('id')
+            ret_la = BuildingType(**data)
+            retlist.append(ret_la)
+
+        return retlist
+
+    def get_use_unit_types(self) -> List[UseUnitTypeCatalogEntry]:
+        retlist = []
+        result = self._rest_adapter.get(endpoint='CommercialInventoryCatalog/UseUnitType')
+
+        for entry in result.data:
+            data = dict(humps.decamelize(entry))
+            data['id_'] = data.pop('id')
+            ret_la = UseUnitTypeCatalogEntry(**data)
+            retlist.append(ret_la)
+
+        return retlist
+
     def get_contract_positions(self,
                                license_agreement_idnum: str = None,
                                license_agreement_id: int = None,

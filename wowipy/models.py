@@ -1281,7 +1281,7 @@ class UseUnit:
     exit_reason: Optional[ExitReason]
     billing_units: List[BillingUnit]
     use_unit_types: List[UseUnitType]
-    company_code: CompanyCode
+    company_code: Optional[CompanyCode]
 
     def __init__(self, id_: int, id_num: str,
                  building_land: Dict, economic_unit: Dict,
@@ -1296,7 +1296,7 @@ class UseUnit:
                  floor: Dict = None,
                  energy_certificate_id: int = None, description_of_position: str = None,
                  exit_reason: Dict = None, billing_units: List[BillingUnit] = None,
-                 company_code: CompanyCode = None, binding_end_date: datetime = None, exit_date: datetime = None,
+                 company_code: Dict = None, binding_end_date: datetime = None, exit_date: datetime = None,
                  management_end: datetime = None, target_rent: int = None,
                  residential_authorization: Dict = None, **kwargs) -> None:
         self.id_ = id_
@@ -1344,7 +1344,11 @@ class UseUnit:
             self.exit_reason = None
         self.billing_units = billing_units
         self.use_unit_types = use_unit_types
-        self.company_code = company_code
+        if company_code is not None:
+            company_code['id_'] = company_code.pop('id')
+            self.company_code = CompanyCode(**company_code)
+        else:
+            self.company_code = None
         self.__dict__.update(kwargs)
 
 

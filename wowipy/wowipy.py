@@ -610,7 +610,8 @@ class WowiPy:
                            economic_id: int = None,
                            limit: int = None,
                            offset: int = 0,
-                           add_args: Dict = None) -> List[EconomicUnit]:
+                           add_args: Dict = None,
+                           fetch_all: bool = False) -> List[EconomicUnit]:
 
         filter_params = {}
         if management_idnum is not None:
@@ -630,9 +631,24 @@ class WowiPy:
 
         if add_args is not None:
             filter_params.update(add_args)
-
-        result = self._rest_adapter.get(endpoint='CommercialInventory/EconomicUnits', ep_params=filter_params)
         retlist = []
+        if not fetch_all:
+            result = self._rest_adapter.get(endpoint='CommercialInventory/EconomicUnits', ep_params=filter_params)
+        else:
+            result = Result(0, "", [])
+            merge_schema = {"mergeStrategy": "append"}
+            merger = Merger(schema=merge_schema)
+            filter_params['offset'] = 0
+            filter_params['limit'] = 100
+            response_count = 100
+            while response_count == 100:
+                part_result = self._rest_adapter.get(endpoint='CommercialInventory/EconomicUnits',
+                                                     ep_params=filter_params)
+                result.data = merger.merge(result.data, part_result.data)
+                filter_params['offset'] += 100
+                response_count = len(part_result.data)
+                print(f"Economic-Unit-Count: {len(result.data)}")
+
         for entry in result.data:
             data = dict(humps.decamelize(entry))
             data['id_'] = data.pop('id')

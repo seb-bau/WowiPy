@@ -666,29 +666,6 @@ class WowiPy:
                            add_args: Dict = None,
                            fetch_all: bool = False,
                            use_cache: bool = False) -> List[BuildingLand]:
-        """
-        Gibt ein oder mehrere Gebäude als Liste zurück.
-        :param fetch_all:
-        :type fetch_all:
-        :param use_cache:
-        :type use_cache:
-        :param offset: Verschiebung der Abfrage. Default: 0
-        :type offset: int
-        :param management_idnum: (Optional) Nur Gebäude dieses Managements zurückgeben
-        :type management_idnum: str
-        :param owner_number: (Optional) Nur Gebäude dieses Eigentümers zurückgeben
-        :type owner_number: str
-        :param economic_unit_idnum: (Optional) Nur Gebäude dieser Wirtschaftseinheit zurückgeben
-        :type economic_unit_idnum: str
-        :param building_land_idnum: (Optional) Nur das Gebäude mit dieser IdNum zurückgeben
-        :type building_land_idnum: str
-        :param limit: Maxmiale Anzahl an Einträgen, die zurückgegeben werden sollen (max = default = 100)
-        :type limit: 100
-        :param add_args: Zusätzlich GET-Parameter als DICT, die an die URL angehängt werden.
-        :type add_args: Dict
-        :return: Liste mit Gebäuden (auch bei nur einem Ergebnis!)
-        :rtype: List[BuildingLand]
-        """
 
         filter_params = {}
         if management_idnum is not None:
@@ -843,30 +820,9 @@ class WowiPy:
                       limit: int = None,
                       offset: int = 0,
                       add_args: Dict = None,
+                      fetch_all: bool = False,
                       use_cache: bool = False) -> List[UseUnit]:
-        """
-        Gibt eine Liste von Nutzungseinheiten zurück
-        :param use_cache:
-        :type use_cache:
-        :param use_unit_idnum: (Optional) Nur diese Nutzungseinheit zurückgeben
-        :type use_unit_idnum: str
-        :param building_land_idnum: (Optional) Nur Einheiten dieses Gebäudes zurückgeben
-        :type building_land_idnum: str
-        :param economic_unit_idnum: (Optional) Nur Einheiten dieser Wirtschaftseinheit zurückgeben
-        :type economic_unit_idnum: str
-        :param management_idnum: (Optional) Nur Einheiten dieses Managements zurückgeben
-        :type management_idnum: str
-        :param owner_number: (Optional) Nur Einheiten dieses Besitzers zurückgeben
-        :type owner_number: str
-        :param limit: Maximale Anzahl an Einträgen, die zurückgegeben werden (max = default = 100)
-        :type limit: int
-        :param offset: (Optional) Verschiebung der Abfrage. Default: 0
-        :type offset: int
-        :param add_args: Zusätzliche Parameter, die per GET an die URL angehängt werden
-        :type add_args: Dict
-        :return: Liste aus Nutzungseinheiten (auch bei nur einem Ergebnis!)
-        :rtype: List[UseUnit]
-        """
+
         filter_params = {}
         if use_unit_idnum is not None:
             filter_params['useUnitNumber'] = use_unit_idnum
@@ -902,7 +858,23 @@ class WowiPy:
                          cache_entry.economic_unit.id_num == economic_unit_idnum):
                     retlist.append(copy.deepcopy(cache_entry))
         else:
-            result = self._rest_adapter.get(endpoint='CommercialInventory/UseUnits', ep_params=filter_params)
+            if not fetch_all:
+                result = self._rest_adapter.get(endpoint='CommercialInventory/UseUnits', ep_params=filter_params)
+            else:
+                result = Result(0, "", [])
+                merge_schema = {"mergeStrategy": "append"}
+                merger = Merger(schema=merge_schema)
+                filter_params['offset'] = 0
+                filter_params['limit'] = 100
+                response_count = 100
+                while response_count == 100:
+                    part_result = self._rest_adapter.get(endpoint='CommercialInventory/UseUnits',
+                                                         ep_params=filter_params)
+                    result.data = merger.merge(result.data, part_result.data)
+                    filter_params['offset'] += 100
+                    response_count = len(part_result.data)
+                    print(f"UseUnit-Count: {len(result.data)}")
+
             for entry in result.data:
                 data = dict(humps.decamelize(entry))
                 data['id_'] = data.pop('id')

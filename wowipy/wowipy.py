@@ -507,6 +507,7 @@ class WowiPy:
         if limit is not None:
             filter_params['limit'] = limit
         filter_params['offset'] = offset
+        filter_params['showNullValues'] = 'true'
         if add_args is not None:
             filter_params.update(add_args)
 

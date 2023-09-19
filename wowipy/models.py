@@ -1429,13 +1429,14 @@ class LicenseAgreement:
     dunning_data: DunningData
     differing_maturity: int
     start_contract: datetime
+    end_of_contract: datetime
     period_of_notice: Optional[PeriodOfNotice]
     debit_entry_type: DebitEntryType
     contractors: Optional[List[Contractor]]
 
     def __init__(self, id_: int, id_num: str, use_unit: Dict, restriction_of_use: Dict,
                  status_contract: Dict, life_of_contract: Dict, payment_interval: Dict,
-                 dunning_data: Dict, start_contract: datetime,
+                 dunning_data: Dict, start_contract: datetime, end_of_contract: datetime,
                  debit_entry_type: Dict,
                  period_of_notice: Dict = None, contractors: List[Contractor] = None,
                  differing_maturity: int = None,
@@ -1455,6 +1456,7 @@ class LicenseAgreement:
         self.dunning_data = DunningData(**dunning_data)
         self.differing_maturity = differing_maturity
         self.start_contract = start_contract
+        self.end_of_contract = end_of_contract
         if period_of_notice is not None:
             period_of_notice["id_"] = period_of_notice.pop("id")
             self.period_of_notice = PeriodOfNotice(**period_of_notice)

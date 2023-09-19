@@ -93,12 +93,21 @@ class RestAdapter:
         }
         log_line_pre = f"method={http_method}, url={full_url}"
         log_line_post = ', '.join((log_line_pre, "success={}, status_code={}, message={}"))
-        try:
-            self._logger.debug(msg=log_line_pre)
-            response = requests.request(method=http_method, url=full_url, headers=headers, params=ep_params, json=data)
-        except requests.exceptions.RequestException as e:
-            self._logger.error(msg=(str(e)))
-            raise WowiPyException("Request failed") from e
+        response = None
+        for _ in range(2):
+            try:
+                self._logger.debug(msg=log_line_pre)
+                response = requests.request(method=http_method, url=full_url, headers=headers, params=ep_params,
+                                            json=data)
+            except requests.exceptions.RequestException as e:
+                self._logger.error(msg=(str(e)))
+                raise WowiPyException("Request failed") from e
+
+            if 200 <= response.status_code < 300:
+                break
+            elif response.status_code == 401:
+                self.token = self._create_token()
+                continue
 
         try:
             data_out = response.json()

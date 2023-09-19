@@ -717,12 +717,12 @@ class Address:
     street_complete: str
     house_number_complete: str
     main_address: bool
-    address_type: AdministrationType
+    address_type: Optional[AddressType]
     country: Optional[Country]
 
     def __init__(self, id_: int, zip_: str, town: str, street: str, house_number: str,
                  valid_from: datetime, street_complete: str, house_number_complete: str,
-                 main_address: bool, address_type: AdministrationType, country: dict,
+                 main_address: bool, address_type: dict, country: dict,
                  house_number_addition: str = None, valid_to: datetime = None) -> None:
         self.id_ = id_
         self.zip_ = zip_
@@ -735,7 +735,12 @@ class Address:
         self.street_complete = street_complete
         self.house_number_complete = house_number_complete
         self.main_address = main_address
-        self.address_type = address_type
+        if address_type is not None:
+            if "id" in address_type.keys():
+                address_type["id_"] = address_type.pop("id")
+            self.address_type = AddressType(**address_type)
+        else:
+            self.address_type = None
         if country is not None:
             if "id" in country.keys():
                 country["id_"] = country.pop("id")

@@ -489,33 +489,10 @@ class WowiPy:
                                offset: int = 0,
                                add_args: Dict = None,
                                add_contractors: bool = False,
+                               fetch_all: bool = False,
                                use_cache: bool = False,
                                ) -> List[LicenseAgreement]:
-        """
-        Gibt eine Liste mit Nutzungsverträgen zurück
-        :param add_contractors:
-        :type add_contractors:
-        :param use_cache:
-        :type use_cache:
-        :param offset: Verschiebung der Abfrage. Default: 0
-        :type offset: int
-        :param economic_unit_idnum: (Optional) Nur Verträge dieser Wirtschaftseinheit zurückgeben
-        :type economic_unit_idnum: str
-        :param use_unit_idnum: (Optional) Nur Verträge dieser Nutzungseinheit zurückgeben
-        :type use_unit_idnum: str
-        :param license_agreement_idnum: (Optional) Nur diesen Vertrag zurückgeben
-        :type license_agreement_idnum: str
-        :param license_agreement_active_on: (Optional) Nur Verträge, die zu diesem Zeitpunkt aktiv sind
-        :type license_agreement_active_on: datetime
-        :param person_idnum: (Optional) NUr Verträge dieser Person zurückgeben
-        :type person_idnum: str
-        :param limit: Maximale Anzahl an zurückgegebenen Einträgen (max = default = 100)
-        :type limit: int
-        :param add_args: Zusätzliche Parameter die per GET an die URL angehängt werden
-        :type add_args: Dict
-        :return: Liste mit Nutzungsverträgen (auch bei nur einem Ergebnis!)
-        :rtype: Liste[LicenseAgreement]
-        """
+
         filter_params = {}
         if economic_unit_idnum is not None:
             filter_params['EconomicUnitIdNum'] = economic_unit_idnum
@@ -546,7 +523,22 @@ class WowiPy:
                                                                        use_cache=True)
                     retlist.append(copy.deepcopy(cache_entry))
         else:
-            result = self._rest_adapter.get(endpoint='RentAccounting/LicenseAgreements', ep_params=filter_params)
+            if not fetch_all:
+                result = self._rest_adapter.get(endpoint='RentAccounting/LicenseAgreements', ep_params=filter_params)
+            else:
+                result = Result(0, "", [])
+                merge_schema = {"mergeStrategy": "append"}
+                merger = Merger(schema=merge_schema)
+                filter_params['offset'] = 0
+                filter_params['limit'] = 100
+                response_count = 100
+                while response_count == 100:
+                    part_result = self._rest_adapter.get(endpoint='RentAccounting/LicenseAgreements',
+                                                         ep_params=filter_params)
+                    result.data = merger.merge(result.data, part_result.data)
+                    filter_params['offset'] += 100
+                    response_count = len(part_result.data)
+                    print(f"License-Agreement-Count: {len(result.data)}")
 
             for entry in result.data:
                 data = dict(humps.decamelize(entry))
@@ -894,28 +886,9 @@ class WowiPy:
                         limit: int = None,
                         offset: int = 0,
                         add_args: Dict = None,
+                        fetch_all: bool = False,
                         use_cache: bool = False) -> List[Contractor]:
-        """
-        Gibt eine Liste von Vertragsnehmern zurück
-        :param use_cache:
-        :type use_cache:
-        :param contractual_use_active_on: (Optional) Nur Vertragsnehmer, deren ContractUse zu diesem Zeitpunkt aktiv war
-        :type contractual_use_active_on: datetime
-        :param license_agreement_active_on: (Optional) Nur Contractors deren Vertrag zu diesem Datum aktiv ist
-        :type license_agreement_active_on: datetime
-        :param person_id: (Optional) Alle Contractor-Beziehungen zu dieser internen Personen-ID
-        :type person_id: int
-        :param license_agreement_id: Alle Contractor-Beziehungen zu dieser internen Vertrags-ID
-        :type license_agreement_id: int
-        :param limit: Maximale Anzahl an Einträgen, die zurückgegeben werden (max = default = 100)
-        :type limit: int
-        :param offset: (Optional) Verschiebung der Abfrage. Default: 0
-        :type offset: int
-        :param add_args: Zusätzliche Parameter, die per GET an die URL angehängt werden
-        :type add_args: Dict
-        :return: Liste aus Contractor (auch bei nur einem Ergebnis!)
-        :rtype: List[Contractor]
-        """
+
         filter_params = {}
         if license_agreement_id is not None:
             filter_params['licenseAgreementId'] = license_agreement_id
@@ -948,7 +921,23 @@ class WowiPy:
                         (person_id is not None and cache_entry.person.id_ == person_id):
                     retlist.append(copy.deepcopy(cache_entry))
         else:
-            result = self._rest_adapter.get(endpoint='RentAccountingPersonDetails/Contractors', ep_params=filter_params)
+            if not fetch_all:
+                result = self._rest_adapter.get(endpoint='RentAccountingPersonDetails/Contractors',
+                                                ep_params=filter_params)
+            else:
+                result = Result(0, "", [])
+                merge_schema = {"mergeStrategy": "append"}
+                merger = Merger(schema=merge_schema)
+                filter_params['offset'] = 0
+                filter_params['limit'] = 100
+                response_count = 100
+                while response_count == 100:
+                    part_result = self._rest_adapter.get(endpoint='RentAccountingPersonDetails/Contractors',
+                                                         ep_params=filter_params)
+                    result.data = merger.merge(result.data, part_result.data)
+                    filter_params['offset'] += 100
+                    response_count = len(part_result.data)
+                    print(f"Contractors-Count: {len(result.data)}")
 
             for entry in result.data:
                 data = dict(humps.decamelize(entry))
@@ -962,6 +951,7 @@ class WowiPy:
                     limit: int = None,
                     offset: int = 0,
                     add_args: Dict = None,
+                    fetch_all: bool = False,
                     use_cache: bool = False) -> List[Person]:
 
         filter_params = {}
@@ -987,7 +977,22 @@ class WowiPy:
                 if person_id is not None and cache_entry.id_ == person_id:
                     retlist.append(copy.deepcopy(cache_entry))
         else:
-            result = self._rest_adapter.get(endpoint='PersonsRead/Persons', ep_params=filter_params)
+            if not fetch_all:
+                result = self._rest_adapter.get(endpoint='PersonsRead/Persons', ep_params=filter_params)
+            else:
+                result = Result(0, "", [])
+                merge_schema = {"mergeStrategy": "append"}
+                merger = Merger(schema=merge_schema)
+                filter_params['offset'] = 0
+                filter_params['limit'] = 100
+                response_count = 100
+                while response_count == 100:
+                    part_result = self._rest_adapter.get(endpoint='PersonsRead/Persons',
+                                                         ep_params=filter_params)
+                    result.data = merger.merge(result.data, part_result.data)
+                    filter_params['offset'] += 100
+                    response_count = len(part_result.data)
+                    print(f"Person-Count: {len(result.data)}")
 
             for entry in result.data:
                 data = dict(humps.decamelize(entry))

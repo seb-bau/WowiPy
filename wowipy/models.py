@@ -718,11 +718,11 @@ class Address:
     house_number_complete: str
     main_address: bool
     address_type: AdministrationType
-    country: CompanyCode
+    country: Optional[Country]
 
     def __init__(self, id_: int, zip_: str, town: str, street: str, house_number: str,
                  valid_from: datetime, street_complete: str, house_number_complete: str,
-                 main_address: bool, address_type: AdministrationType, country: CompanyCode,
+                 main_address: bool, address_type: AdministrationType, country: dict,
                  house_number_addition: str = None, valid_to: datetime = None) -> None:
         self.id_ = id_
         self.zip_ = zip_
@@ -736,7 +736,12 @@ class Address:
         self.house_number_complete = house_number_complete
         self.main_address = main_address
         self.address_type = address_type
-        self.country = country
+        if country is not None:
+            if "id" in country.keys():
+                country["id_"] = country.pop("id")
+            self.country = Country(**country)
+        else:
+            self.country = None
 
 
 class BankAccountType:

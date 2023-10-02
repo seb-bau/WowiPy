@@ -1541,7 +1541,8 @@ class Ticket:
     time_received: datetime
     subject: str
     content: str
-    department_id: int
+    department_id: Optional[int]
+    department_name: Optional[str]
     user_id: int
     priority_id: int
     priority_code: str
@@ -1559,7 +1560,7 @@ class Ticket:
                  time_received: str,
                  subject: str,
                  content: str,
-                 department_id: int,
+                 department: Dict,
                  user_id: int,
                  priority: Dict,
                  status: Dict,
@@ -1576,7 +1577,12 @@ class Ticket:
             self.time_received = datetime.strptime(time_received, "%Y-%m-%dT%H:%M:%S%z")
         self.subject = subject
         self.content = content
-        self.department_id = department_id
+        if department is not None:
+            self.department_id = department["id"]
+            self.department_name = department["name"]
+        else:
+            self.department_id = None
+            self.department_name = None
         self.user_id = user_id
         self.priority_id = priority["id"]
         self.priority_code = priority["code"]

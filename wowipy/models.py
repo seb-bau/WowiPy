@@ -1690,15 +1690,23 @@ class JurisdictionListEntry:
     responsible_official: ResponsibleOfficial
     department_type_id: int
     department_type_name: str
+    department_id: Optional[int]
+    department_name: Optional[str]
 
     def __init__(self, id_: int, main_jurisdiction: bool, responsible_official: dict,
-                 department_type: dict):
+                 department_type: dict, department: dict):
         self.id_ = id_
         self.main_jurisdiction = main_jurisdiction
         responsible_official["id_"] = responsible_official.pop("id")
         self.responsible_official = ResponsibleOfficial(**responsible_official)
         self.department_type_id = department_type.get("id")
         self.department_type_name = department_type.get("name")
+        if department is not None:
+            self.department_id = department["id"]
+            self.department_name = department["name"]
+        else:
+            self.department_id = None
+            self.department_name = None
 
 
 class UseUnitJurisdiction:

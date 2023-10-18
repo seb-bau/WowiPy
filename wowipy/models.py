@@ -1673,15 +1673,17 @@ class ResponsibleOfficial:
     universal_responsibility_possible: bool
     person_id: int
     person_name: str
+    user_id: int
 
     def __init__(self, id_: int, code_short: str, automatic_mails_activated: bool,
-                 universal_responsibility_possible: bool, person_id: int, person_name: str):
+                 universal_responsibility_possible: bool, person_id: int, person_name: str, user_id: int):
         self.id_ = id_
         self.code_short = code_short
         self.automatic_mails_activated = automatic_mails_activated
         self.universal_responsibility_possible = universal_responsibility_possible
         self.person_id = person_id
         self.person_name = person_name
+        self.user_id = user_id
 
 
 class JurisdictionListEntry:

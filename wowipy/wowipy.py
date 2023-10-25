@@ -1227,6 +1227,70 @@ class WowiPy:
         result = self._rest_adapter.post(endpoint='CommunicationEdit/Ticket/AddComment', data=data_dict)
         return result
 
+    def get_responsible_officials(self,
+                                  user_id: int = None,
+                                  person_id: int = None,
+                                  limit: int = None,
+                                  offset: int = 0,
+                                  add_args: Dict = None,
+                                  fetch_all: bool = False
+                                  ) -> List[ResponsibleOfficial]:
+
+        filter_params = {}
+
+        if person_id is not None:
+            filter_params['personId'] = person_id
+
+        if limit is not None:
+            filter_params['limit'] = limit
+        filter_params['offset'] = offset
+
+        # Standardparameter, können via add_args überschrieben werden
+        filter_params['showNullValues'] = 'true'
+
+        if add_args is not None:
+            filter_params.update(add_args)
+
+        retlist = []
+
+        if not fetch_all:
+            result = self._rest_adapter.get(endpoint='CommercialInventory/ResponsibleOfficial',
+                                            ep_params=filter_params)
+        else:
+            result = Result(0, "", [])
+            merge_schema = {"mergeStrategy": "append"}
+            merger = Merger(schema=merge_schema)
+            filter_params['offset'] = 0
+            filter_params['limit'] = 100
+            response_count = 100
+            while response_count == 100:
+                part_result = self._rest_adapter.get(endpoint='CommercialInventory/ResponsibleOfficial',
+                                                     ep_params=filter_params)
+                result.data = merger.merge(result.data, part_result.data)
+                filter_params['offset'] += 100
+                response_count = len(part_result.data)
+                print(f"ResponsibleOfficial Count: {len(result.data)}")
+
+        for entry in result.data:
+            data = dict(humps.decamelize(entry))
+            if user_id is not None and data.get("user_id") != user_id:
+                continue
+            # Hier hängt normalerweise noch die Person dran. Die wollen wir aber nicht mitnehmen (jedenfalls
+            # aktuell nicht) um die Ausgabe an die der Jurisdictions anzugleichen
+            # Default Address wird auch entfernt
+            try:
+                data.pop("default_address", None)
+                tperson = data.pop("person")
+                data["person_id"] = tperson.get("id", None)
+                data["person_name"] = tperson.get("name", None)
+                data["id_"] = data.pop("id")
+                ret_la = ResponsibleOfficial(**data)
+                retlist.append(ret_la)
+            except KeyError:
+                pass
+
+        return retlist
+
     def get_economic_unit_jurisdictions(self,
                                         economic_unit_id: int = None,
                                         limit: int = None,

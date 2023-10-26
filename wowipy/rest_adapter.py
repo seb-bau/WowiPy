@@ -64,8 +64,8 @@ class RestAdapter:
         response_json = response.json()
         return response_json["access_token"]
 
-    def get(self, endpoint: str, ep_params: Dict = None) -> Result:
-        return self._do(http_method='GET', endpoint=endpoint, ep_params=ep_params)
+    def get(self, endpoint: str, ep_params: Dict = None, force_refresh: bool = False) -> Result:
+        return self._do(http_method='GET', endpoint=endpoint, ep_params=ep_params, force_refresh=force_refresh)
 
     def post(self, endpoint: str, ep_params: Dict = None, data: Dict = None) -> Result:
         return self._do(http_method='POST', endpoint=endpoint, ep_params=ep_params, data=data)
@@ -73,7 +73,8 @@ class RestAdapter:
     def delete(self, endpoint: str, ep_params: Dict = None, data: Dict = None) -> Result:
         return self._do(http_method='DELETE', endpoint=endpoint, ep_params=ep_params, data=data)
 
-    def _do(self, http_method: str, endpoint: str, ep_params: Dict = None, data: Dict = None) -> Result:
+    def _do(self, http_method: str, endpoint: str, ep_params: Dict = None, data: Dict = None,
+            force_refresh: bool = False) -> Result:
         if ep_params is None:
             ep_params = {}
 
@@ -97,8 +98,13 @@ class RestAdapter:
         for _ in range(2):
             try:
                 self._logger.debug(msg=log_line_pre)
-                response = requests.request(method=http_method, url=full_url, headers=headers, params=ep_params,
-                                            json=data)
+                if force_refresh:
+                    with requests_cache.disabled():
+                        response = requests.request(method=http_method, url=full_url, headers=headers, params=ep_params,
+                                                    json=data)
+                else:
+                    response = requests.request(method=http_method, url=full_url, headers=headers, params=ep_params,
+                                                json=data)
             except requests.exceptions.RequestException as e:
                 self._logger.error(msg=(str(e)))
                 raise WowiPyException("Request failed") from e

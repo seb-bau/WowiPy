@@ -1119,7 +1119,8 @@ class WowiPy:
                     ticket_source_id: int = None,
                     limit: int = None,
                     offset: int = 0,
-                    add_args: Dict = None
+                    add_args: Dict = None,
+                    force_refresh: bool = False
                     ) -> List[Ticket]:
 
         filter_params = {}
@@ -1148,7 +1149,8 @@ class WowiPy:
 
         retlist = []
 
-        result = self._rest_adapter.get(endpoint='CommunicationRead/Ticket', ep_params=filter_params)
+        result = self._rest_adapter.get(endpoint='CommunicationRead/Ticket', ep_params=filter_params,
+                                        force_refresh=force_refresh)
         for entry in result.data:
             data = dict(humps.decamelize(entry))
             data['id_'] = data.pop('id')

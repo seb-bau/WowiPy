@@ -118,7 +118,7 @@ class RestAdapter:
         try:
             data_out = response.json()
         except (ValueError, JSONDecodeError) as e:
-            self._logger.error(msg=log_line_post.format(False, None, e))
+            self._logger.error(msg=log_line_post.format(False, None, f"{e} Response: {response.text}"))
             raise WowiPyException("Bad JSON in response") from e
 
         is_success = 200 <= response.status_code <= 299

@@ -113,6 +113,7 @@ class RestAdapter:
                 break
             elif response.status_code == 401:
                 self.token = self._create_token()
+                headers['Authorization'] = f'Bearer {self.token}'
                 continue
 
         try:

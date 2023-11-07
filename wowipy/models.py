@@ -675,7 +675,10 @@ class InvoiceReceipt:
                  monetary_total: Dict,
                  tax_total: Dict,
                  payment_orders: List[Dict],
-                 commission_items: List[Dict]) -> None:
+                 commission_items: List[Dict],
+                 **kwargs) -> None:
+        if kwargs:
+            pass
         self.id_ = id_
         self.number = number
         company_code["id_"] = company_code.pop("id")

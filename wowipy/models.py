@@ -79,16 +79,20 @@ class Commission:
         self.id_ = id_
         self.id_num = id_num
         self.code = code
-        self.recording_date = datetime.strptime(recording_date, "%Y-%m-%dT%H:%M:%S%z")
+        self.recording_date = datetime.strptime(recording_date, "%Y-%m-%d")
         if '.' in release_date:
             self.release_date = datetime.strptime(release_date, "%Y-%m-%dT%H:%M:%S.%f%z")
-        else:
+        elif ':' in release_date:
             self.release_date = datetime.strptime(release_date, "%Y-%m-%dT%H:%M:%S%z")
+        else:
+            self.release_date = datetime.strptime(release_date, "%Y-%m-%d")
         if placing_date is not None:
             if '.' in placing_date:
                 self.placing_date = datetime.strptime(placing_date, "%Y-%m-%dT%H:%M:%S.%f%z")
-            else:
+            elif ':' in placing_date:
                 self.placing_date = datetime.strptime(placing_date, "%Y-%m-%dT%H:%M:%S%z")
+            else:
+                self.placing_date = datetime.strptime(placing_date, "%Y-%m-%d")
         else:
             self.placing_date = None
         if acceptance_date is not None:
@@ -98,8 +102,10 @@ class Commission:
         if completion_date is not None:
             if '.' in completion_date:
                 self.completion_date = datetime.strptime(completion_date, "%Y-%m-%dT%H:%M:%S.%f%z")
-            else:
+            elif ':' in completion_date:
                 self.completion_date = datetime.strptime(completion_date, "%Y-%m-%dT%H:%M:%S%z")
+            else:
+                self.completion_date = datetime.strptime(completion_date, "%Y-%m-%d")
         else:
             self.completion_date = None
         commission_type["id_"] = commission_type.pop("id")
@@ -520,6 +526,7 @@ class CommissionItem:
     commission_text: str
     internal_description: str
     position_number: int
+    is_canceled: bool
     budget_data: Optional[BudgetData]
     sales_tax: SalesTax
     service_catalogue: ServiceCatalogue
@@ -547,7 +554,12 @@ class CommissionItem:
                  component: Dict,
                  facility: Dict,
                  approved_net_amount: int,
-                 commission: Dict) -> None:
+                 commission: Dict,
+                 is_canceled: bool,
+                 **kwargs) -> None:
+        if kwargs:
+            pass
+        self.is_canceled = is_canceled
         self.id_ = id_
         self.code = code
         self.unit_price = unit_price
@@ -645,15 +657,12 @@ class TaxTotal:
 class MonetaryTotal:
     tax_exclusive_amount: int
     tax_inclusive_amount: int
-    labor_cost: int
-    material_cost: int
 
-    def __init__(self, tax_exclusive_amount: int, tax_inclusive_amount: int, labor_cost: int,
-                 material_cost: int) -> None:
+    def __init__(self, tax_exclusive_amount: int, tax_inclusive_amount: int, **kwargs) -> None:
+        if kwargs:
+            pass
         self.tax_exclusive_amount = tax_exclusive_amount
         self.tax_inclusive_amount = tax_inclusive_amount
-        self.labor_cost = labor_cost
-        self.material_cost = material_cost
 
 
 class InvoiceReceipt:
@@ -685,12 +694,16 @@ class InvoiceReceipt:
         self.company_code = CompanyCode(**company_code)
         if '.' in invoice_date:
             self.invoice_date = datetime.strptime(invoice_date, "%Y-%m-%dT%H:%M:%S.%f%z")
-        else:
+        elif ':' in invoice_date:
             self.invoice_date = datetime.strptime(invoice_date, "%Y-%m-%dT%H:%M:%S%z")
+        else:
+            self.invoice_date = datetime.strptime(invoice_date, "%Y-%m-%d")
         if '.' in maturity_date:
             self.maturity_date = datetime.strptime(maturity_date, "%Y-%m-%dT%H:%M:%S.%f%z")
-        else:
+        elif ':' in maturity_date:
             self.maturity_date = datetime.strptime(maturity_date, "%Y-%m-%dT%H:%M:%S%z")
+        else:
+            self.maturity_date = datetime.strptime(maturity_date, "%Y-%m-%d")
         self.monetary_total = MonetaryTotal(**monetary_total)
         self.tax_total = TaxTotal(**tax_total)
         tpayment_orders = []

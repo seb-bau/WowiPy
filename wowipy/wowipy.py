@@ -596,6 +596,93 @@ class WowiPy:
             retlist.append(ret_la)
         return retlist
 
+    def get_online_repayment_plan(self, loan_id: int):
+        result = self._rest_adapter.get(endpoint=f'Loans/Loan/{loan_id}/OnlineRepaymentPlan')
+        retlist = []
+        for entry in result.data:
+            data = dict(humps.decamelize(entry))
+            ret_la = OnlineRepaymentPlanEntry(**data)
+            retlist.append(ret_la)
+        return retlist
+
+    def get_repayment_plan(self, loan_id: int):
+        result = self._rest_adapter.get(endpoint=f'Loans/Loan/{loan_id}/RepaymentPlan')
+        retlist = []
+        for entry in result.data:
+            data = dict(humps.decamelize(entry))
+            data["id_"] = data.pop("id")
+            ret_la = RepaymentPlanEntry(**data)
+            retlist.append(ret_la)
+        return retlist
+
+    def get_loans(self,
+                  loan_id: int = None,
+                  loan_idnum: str = None,
+                  loan_type_id: int = None,
+                  company_code_id: int = None,
+                  lender_id: int = None,
+                  lender_idnum: str = None,
+                  borrower_id: int = None,
+                  borrower_idnum: str = None,
+                  limit: int = None,
+                  offset: int = 0,
+                  add_args: Dict = None,
+                  fetch_all: bool = False
+                  ) -> List[Loan]:
+        filter_params = {}
+        if loan_id is not None:
+            filter_params['loanId'] = loan_id
+        if loan_idnum is not None:
+            filter_params['loanIdNum'] = loan_idnum
+        if loan_type_id is not None:
+            filter_params['loanTypeId'] = loan_type_id
+        if company_code_id is not None:
+            filter_params['companyCodeId'] = company_code_id
+        if lender_id is not None:
+            filter_params['lenderId'] = lender_id
+        if lender_idnum is not None:
+            filter_params['lenderNumber'] = lender_idnum
+        if borrower_id is not None:
+            filter_params['borrowerId'] = borrower_id
+        if borrower_idnum is not None:
+            filter_params['borrowerNumber'] = borrower_idnum
+        if limit is not None:
+            filter_params['limit'] = limit
+        filter_params['offset'] = offset
+        filter_params['includeBanking'] = 'true'
+        filter_params['includeObjectAssignment'] = 'true'
+        filter_params['includeCondition'] = 'true'
+        filter_params['includeRepaymentPlan'] = 'true'
+        filter_params['includeAdditionalField'] = 'true'
+        filter_params['showNullValues'] = 'true'
+
+        if add_args is not None:
+            filter_params.update(add_args)
+        retlist = []
+        if not fetch_all:
+            result = self._rest_adapter.get(endpoint='Loans/Loan', ep_params=filter_params)
+        else:
+            result = Result(0, "", [])
+            merge_schema = {"mergeStrategy": "append"}
+            merger = Merger(schema=merge_schema)
+            filter_params['offset'] = 0
+            filter_params['limit'] = 100
+            response_count = 100
+            while response_count == 100:
+                part_result = self._rest_adapter.get(endpoint='Loans/Loan',
+                                                     ep_params=filter_params)
+                result.data = merger.merge(result.data, part_result.data)
+                filter_params['offset'] += 100
+                response_count = len(part_result.data)
+                print(f"Loan-Count: {len(result.data)}")
+
+        for entry in result.data:
+            data = dict(humps.decamelize(entry))
+            data['id_'] = data.pop('id')
+            ret_la = Loan(**data)
+            retlist.append(ret_la)
+        return retlist
+
     def get_economic_units(self,
                            management_idnum: str = None,
                            owner_number: str = None,

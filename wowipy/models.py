@@ -1,4 +1,5 @@
 from typing import List, Dict, Optional
+from decimal import Decimal
 from datetime import datetime
 
 
@@ -1546,12 +1547,561 @@ class TicketAssignment:
     assignment_entity_code: str
     entity_id: int
 
-    def __init__(self,  assignment_entity_id: int, entity_id: int, id_: int = 0,
+    def __init__(self, assignment_entity_id: int, entity_id: int, id_: int = 0,
                  assignment_entity_code: str = "") -> None:
         self.id_ = id_
         self.assignment_entity_id = assignment_entity_id
         self.assignment_entity_code = assignment_entity_code
         self.entity_id = entity_id
+
+
+class Lender:
+    id_: int
+    id_num: str
+    has_balancing_confirmation: bool
+    banking_days: int
+    payment_advice: bool
+    lender_type_id: int
+    lender_type: str
+    advise_type_id: Optional[int]
+    advise_type: Optional[str]
+    loan_state_id: Optional[int]
+    loan_state: Optional[str]
+    person_id: int
+    person: Person
+
+    def __init__(self,
+                 id_: int,
+                 lender_number: str,
+                 has_balancing_confirmation: bool,
+                 banking_days: int,
+                 payment_advice: bool,
+                 lender_type: dict,
+                 person_id: int,
+                 person: dict,
+                 advise_type: dict = None,
+                 loan_state: dict = None,
+                 **kwargs):
+        if kwargs:
+            pass
+        self.id_ = id_
+        self.id_num = lender_number
+        self.has_balancing_confirmation = has_balancing_confirmation
+        self.banking_days = banking_days
+        self.payment_advice = payment_advice
+        self.lender_type_id = lender_type.get("id")
+        self.lender_type = lender_type.get("code")
+        if advise_type is not None:
+            self.advise_type_id = advise_type.get("id")
+            self.advise_type = advise_type.get("code")
+        else:
+            self.advise_type_id = None
+            self.advise_type = None
+        if loan_state is not None:
+            self.loan_state_id = loan_state.get("id")
+            self.loan_state = loan_state.get("code")
+        else:
+            self.loan_state_id = None
+            self.loan_state = None
+        self.person_id = person_id
+        person["id_"] = person.pop("id")
+        self.person = Person(**person)
+
+    def __repr__(self):
+        return f"Lender ID {self.id_} / Number {self.id_num}"
+
+
+class Borrower:
+    id_: int
+    id_num: str
+    has_balancing_confirmation: bool
+    borrower_type_id: int
+    borrower_type: str
+    loan_state_id: Optional[int]
+    loan_state: Optional[str]
+    person_id: int
+    person: Person
+
+    def __init__(self,
+                 id_: int,
+                 borrower_number: str,
+                 has_balancing_confirmation: bool,
+                 borrower_type: dict,
+                 person_id: int,
+                 person: dict,
+                 loan_state: dict = None,
+                 **kwargs):
+        if kwargs:
+            pass
+        self.id_ = id_
+        self.id_num = borrower_number
+        self.has_balancing_confirmation = has_balancing_confirmation
+        self.borrower_type_id = borrower_type.get("id")
+        self.borrower_type = borrower_type.get("code")
+        if loan_state is not None:
+            self.loan_state_id = loan_state.get("id")
+            self.loan_state = loan_state.get("code")
+        else:
+            self.loan_state_id = None
+            self.loan_state = None
+        self.person_id = person_id
+        person["id_"] = person.pop("id")
+        self.person = Person(**person)
+
+    def __repr__(self):
+        return f"Borrower ID {self.id_} / Number {self.id_num}"
+
+
+class OnlineRepaymentPlanEntry:
+    calculation_date: datetime
+    maturity: datetime
+    rest_debt: Decimal
+    calculation_capital: Decimal
+    interest: Decimal
+    amortization: Decimal
+    administrative_cost: Decimal
+    guarantee_fee: Decimal
+    payment_amount: Decimal
+    current_residual_debt: Decimal
+    validation: Decimal
+    non_standard_amortization: Decimal
+    nominal_origin: Decimal
+    residual_debt_next_period: Decimal
+    annuity_by_due_date: Optional[Decimal]
+
+    def __init__(self,
+                 calculation_date: str,
+                 maturity: str,
+                 rest_debt: Decimal,
+                 calculation_capital: Decimal,
+                 interest: Decimal,
+                 amortization: Decimal,
+                 administrative_cost: Decimal,
+                 guarantee_fee: Decimal,
+                 payment_amount: Decimal,
+                 current_residual_debt: Decimal,
+                 validation: Decimal,
+                 non_standard_amortization: Decimal,
+                 nominal_origin: Decimal,
+                 residual_debt_next_period: Decimal,
+                 annuity_by_due_date: Decimal = None,
+                 **kwargs):
+        if kwargs:
+            pass
+        self.calculation_date = datetime.strptime(calculation_date, "%Y-%m-%d")
+        self.maturity = datetime.strptime(maturity, "%Y-%m-%d")
+        self.rest_debt = rest_debt
+        self.calculation_capital = calculation_capital
+        self.interest = interest
+        self.amortization = amortization
+        self.administrative_cost = administrative_cost
+        self.guarantee_fee = guarantee_fee
+        self.payment_amount = payment_amount
+        self.current_residual_debt = current_residual_debt
+        self.validation = validation
+        self.non_standard_amortization = non_standard_amortization
+        self.nominal_origin = nominal_origin
+        self.residual_debt_next_period = residual_debt_next_period
+        self.annuity_by_due_date = annuity_by_due_date
+
+
+class RepaymentPlanEntry:
+    id_: int
+    maturity: Optional[datetime]
+    rest_debt: Decimal
+    calculation_capital: Decimal
+    annuity_amount: Decimal
+    amortization: Decimal
+    interest: Decimal
+    administrative_cost: Decimal
+    guarantee_fee: Decimal
+    non_standard_amortization: Decimal
+    validation: Decimal
+    is_past_period: bool
+    payment_amount: Decimal
+    residual_debt_next_period: Decimal
+
+    def __init__(self,
+                 id_: int,
+                 maturity: str,
+                 rest_debt: Decimal,
+                 calculation_capital: Decimal,
+                 annuity_amount: Decimal,
+                 amortization: Decimal,
+                 interest: Decimal,
+                 administrative_cost: Decimal,
+                 guarantee_fee: Decimal,
+                 non_standard_amortization: Decimal,
+                 validation: Decimal,
+                 is_past_period: bool,
+                 payment_amount: Decimal,
+                 residual_debt_next_period: Decimal,
+                 **kwargs):
+        if kwargs:
+            pass
+        self.id_ = id_
+        self.maturity = datetime.strptime(maturity, "%Y-%m-%d")
+        self.rest_debt = rest_debt
+        self.calculation_capital = calculation_capital
+        self.annuity_amount = annuity_amount
+        self.amortization = amortization
+        self.interest = interest
+        self.administrative_cost = administrative_cost
+        self.guarantee_fee = guarantee_fee
+        self.non_standard_amortization = non_standard_amortization
+        self.validation = validation
+        self.is_past_period = is_past_period
+        self.payment_amount = payment_amount
+        self.residual_debt_next_period = residual_debt_next_period
+
+
+class ObjectAssignmentEntry:
+    id_: int
+    nominal_amount: Decimal
+    economic_unit: Optional[EconomicUnitShort]
+    object_allocation_type_id: Optional[int]
+    object_allocation_type: Optional[str]
+
+    def __init__(self, id_: int, nominal_amount: Decimal, economic_unit: Dict, object_allocation_type: Dict):
+        self.id_ = id_
+        self.nominal_amount = nominal_amount
+        if economic_unit is not None:
+            economic_unit["id_"] = economic_unit.pop("id")
+            self.economic_unit = EconomicUnitShort(**economic_unit)
+        else:
+            self.economic_unit = None
+        if object_allocation_type:
+            self.object_allocation_type_id = object_allocation_type.get("id")
+            self.object_allocation_type = object_allocation_type.get("code")
+        else:
+            self.object_allocation_type_id = None
+            self.object_allocation_type = None
+
+
+class Condition:
+    id_: int
+    term_from: datetime
+    term_to: Optional[datetime]
+    amount: Decimal
+    percentage: Decimal
+    first_maturity: Optional[datetime]
+    next_maturity: Optional[datetime]
+    fixed_maturity: Optional[datetime]
+    amortization_setting_off: Optional[datetime]
+    loan_terms_type_id: int
+    loan_term_type: str
+    maturity_date_type_id: int
+    maturity_date_type: str
+    period_of_performance_from_id: int
+    period_of_performance_from: str
+    period_of_performance_to_id: int
+    period_of_performance_to: str
+    rounding_type_id: Optional[int]
+    rounding_type: Optional[str]
+    loan_base_id: Optional[int]
+    loan_base: Optional[str]
+    change_reason_cost_item_id: Optional[int]
+    change_reason_cost_item: Optional[str]
+    maturity_period_id: Optional[int]
+    maturity_period: Optional[str]
+
+    def __init__(self,
+                 id_: int,
+                 term_from: str,
+                 term_to: str,
+                 amount: Decimal,
+                 percentage: Decimal,
+                 first_maturity: str,
+                 next_maturity: str,
+                 fixed_maturity: str,
+                 amortization_setting_off: str,
+                 loan_terms_type: Dict,
+                 maturity_date_type: Dict,
+                 period_of_performance_from: Dict,
+                 period_of_performance_to: Dict,
+                 rounding_type: Dict,
+                 loan_base: Dict,
+                 change_reason_cost_item: Dict,
+                 maturity_period: Dict,
+                 **kwargs):
+        if kwargs:
+            pass
+        self.id_ = id_
+        self.term_from = datetime.strptime(term_from, "%Y-%m-%d")
+        if term_to:
+            self.term_to = datetime.strptime(term_to, "%Y-%m-%d")
+        else:
+            self.term_to = None
+        self.amount = amount
+        self.percentage = percentage
+        if first_maturity:
+            self.first_maturity = datetime.strptime(first_maturity, "%Y-%m-%d")
+        else:
+            self.first_maturity = None
+        if next_maturity:
+            self.next_maturity = datetime.strptime(next_maturity, "%Y-%m-%d")
+        else:
+            self.next_maturity = None
+        if fixed_maturity:
+            self.fixed_maturity = datetime.strptime(fixed_maturity, "%Y-%m-%d")
+        else:
+            self.fixed_maturity = None
+        if amortization_setting_off:
+            self.amortization_setting_off = datetime.strptime(amortization_setting_off, "%Y-%m-%d")
+        else:
+            self.amortization_setting_off = None
+        self.loan_terms_type_id = loan_terms_type.get("id")
+        self.loan_term_type = loan_terms_type.get("code")
+        self.maturity_date_type_id = maturity_date_type.get("id")
+        self.maturity_date_type = maturity_date_type.get("code")
+        self.period_of_performance_from_id = period_of_performance_from.get("id")
+        self.period_of_performance_from = period_of_performance_from.get("code")
+        self.period_of_performance_to_id = period_of_performance_to.get("id")
+        self.period_of_performance_to = period_of_performance_to.get("code")
+        if rounding_type:
+            self.rounding_type_id = rounding_type.get("id")
+            self.rounding_type = rounding_type.get("code")
+        else:
+            self.rounding_type_id = None
+            self.rounding_type = None
+        if loan_base:
+            self.loan_base_id = loan_base.get("id")
+            self.loan_base = loan_base.get("code")
+        else:
+            self.loan_base_id = None
+            self.loan_base = None
+        if change_reason_cost_item:
+            self.change_reason_cost_item_id = change_reason_cost_item.get("id")
+            self.change_reason_cost_item = change_reason_cost_item.get("code")
+        else:
+            self.change_reason_cost_item_id = None
+            self.change_reason_cost_item = None
+        if maturity_period:
+            self.maturity_period_id = maturity_period.get("id")
+            self.maturity_period = maturity_period.get("code")
+        else:
+            self.maturity_period_id = None
+            self.maturity_period = None
+
+
+class AnnuityHeaderItem:
+    id_: int
+    annuity_per_maturity: Decimal
+    term_from: datetime
+    term_to: Optional[datetime]
+    conditions: List[Condition]
+
+    def __init__(self,
+                 id_: int,
+                 annuity_per_maturity: Decimal,
+                 term_from: str,
+                 term_to: str,
+                 conditions: List[Dict]):
+        self.id_ = id_
+        self.annuity_per_maturity = annuity_per_maturity
+        self.term_from = datetime.strptime(term_from, "%Y-%m-%d")
+        if term_to:
+            self.term_to = datetime.strptime(term_to, "%Y-%m-%d")
+        else:
+            self.term_to = None
+        self.conditions = []
+        if conditions:
+            for condition_entry in conditions:
+                condition_entry["id_"] = condition_entry.pop("id")
+                self.conditions.append(Condition(**condition_entry))
+
+
+class Loan:
+    id_: int
+    id_num: str
+    company_id: int
+    company_code: str
+    company_name: str
+    borrower_id: int
+    borrower_id_num: str
+    lender_id: int
+    lender_id_num: str
+    loan_type_id: int
+    loan_type_code: str
+    loan_type_short_code: str
+    collateral_security_id: int
+    collateral_security: str
+    contract_date: Optional[datetime]
+    date_of_full_payment: Optional[datetime]
+    has_special_repayment_option: bool
+    current_date: datetime
+    nominal_as_per_land_register: Decimal
+    nominal_capital: Decimal
+    residual_debt: Decimal
+    calculation_capital: Decimal
+    min_term_from: datetime
+    file_number: str
+    contingent_number: str
+    repayment_blackout_period: Optional[datetime]
+    annuity_mix: Decimal
+    debt_discount_percent: Decimal
+    building_saving_sum: Decimal
+    end_of_interest_fixing: Optional[datetime]
+    last_ended_interest_entry: Optional[datetime]
+    banking: Banking
+    own_reference: str
+    bank_account_id: Optional[int]
+    bank_account_iban: Optional[str]
+    bank_account_bic: Optional[str]
+    subsidies_loan_id: Optional[int]
+    subsidies_loan: Optional[str]
+    cancellation_possibility_id: Optional[int]
+    cancellation_possibility: Optional[str]
+    follower_loan_id: Optional[int]
+    follower_loan_idnum: Optional[str]
+    precursor_loan_id: Optional[int]
+    precursor_loan_idnum: Optional[str]
+    conditions: List[Condition]
+    annuity_header: List[AnnuityHeaderItem]
+    object_assignments: List[ObjectAssignmentEntry]
+    repayment_plan: List[RepaymentPlanEntry]
+    additional_fields: List[Dict]
+
+    def __init__(self,
+                 id_: int,
+                 id_num: str,
+                 company_code: dict,
+                 borrower: dict,
+                 lender: dict,
+                 loan_type: dict,
+                 collateral_security: dict,
+                 contract_date: str,
+                 date_of_full_payment: str,
+                 has_special_repayment_option: bool,
+                 current_date: str,
+                 nominal_as_per_land_register: Decimal,
+                 nominal_capital: Decimal,
+                 residual_debt: Decimal,
+                 calculation_capital: Decimal,
+                 min_term_from: str,
+                 file_number: str,
+                 contingent_number: str,
+                 repayment_blackout_period: str,
+                 annuity_mix: Decimal,
+                 debt_discount_percent: Decimal,
+                 building_saving_sum: Decimal,
+                 end_of_interest_fixing: str,
+                 last_ended_interest_entry: str,
+                 banking: dict,
+                 own_reference: str,
+                 bank_account: dict,
+                 subsidies_loan: dict,
+                 cancellation_possibility: dict,
+                 follower_loan: dict,
+                 precursor_loan: dict,
+                 conditions: List[Dict],
+                 annuity_header: List[Dict],
+                 object_assignments: List[Dict],
+                 repayment_plan: List[Dict],
+                 additional_fields: List[Dict],
+                 ):
+        self.id_ = id_
+        self.id_num = id_num
+        self.company_code = company_code.get("code")
+        self.company_id = company_code.get("id")
+        self.company_name = company_code.get("name")
+        self.borrower_id = borrower.get("id")
+        self.borrower_id_num = borrower.get("borrower_number")
+        self.lender_id = lender.get("id")
+        self.lender_id_num = lender.get("lender_number")
+        self.loan_type_id = loan_type.get("id")
+        self.loan_type_code = loan_type.get("code")
+        self.loan_type_short_code = loan_type.get("short_code")
+        self.collateral_security_id = collateral_security.get("id")
+        self.collateral_security = collateral_security.get("code")
+        if contract_date:
+            self.contract_date = datetime.strptime(contract_date, "%Y-%m-%d")
+        else:
+            self.contract_date = None
+        if date_of_full_payment:
+            self.date_of_full_payment = datetime.strptime(date_of_full_payment, "%Y-%m-%d")
+        else:
+            self.date_of_full_payment = None
+        self.has_special_repayment_option = has_special_repayment_option
+        self.current_date = datetime.strptime(current_date, "%Y-%m-%d")
+        self.nominal_as_per_land_register = nominal_as_per_land_register
+        self.nominal_capital = nominal_capital
+        self.residual_debt = residual_debt
+        self.calculation_capital = calculation_capital
+        self.min_term_from = datetime.strptime(min_term_from, "%Y-%m-%d")
+        self.file_number = file_number
+        self.contingent_number = contingent_number
+        if repayment_blackout_period:
+            self.repayment_blackout_period = datetime.strptime(repayment_blackout_period, "%Y-%m-%d")
+        else:
+            self.repayment_blackout_period = None
+        self.annuity_mix = annuity_mix
+        self.debt_discount_percent = debt_discount_percent
+        self.building_saving_sum = building_saving_sum
+        if end_of_interest_fixing:
+            self.end_of_interest_fixing = datetime.strptime(end_of_interest_fixing, "%Y-%m-%d")
+        else:
+            self.end_of_interest_fixing = None
+        if last_ended_interest_entry:
+            self.last_ended_interest_entry = datetime.strptime(last_ended_interest_entry, "%Y-%m-%d")
+        else:
+            self.last_ended_interest_entry = None
+        banking["id_"] = banking.pop("id")
+        self.banking = Banking(**banking)
+        self.own_reference = own_reference
+        if bank_account:
+            self.bank_account_id = bank_account.get("id")
+            self.bank_account_bic = bank_account.get("bic")
+            self.bank_account_iban = bank_account.get("iban")
+        else:
+            self.bank_account_id = None
+            self.bank_account_iban = None
+            self.bank_account_bic = None
+        if subsidies_loan:
+            self.subsidies_loan_id = subsidies_loan.get("id")
+            self.subsidies_loan = subsidies_loan.get("code")
+        else:
+            self.subsidies_loan_id = None
+            self.subsidies_loan = None
+        if cancellation_possibility:
+            self.cancellation_possibility_id = cancellation_possibility.get("id")
+            self.cancellation_possibility = cancellation_possibility.get("code")
+        else:
+            self.cancellation_possibility_id = None
+            self.cancellation_possibility = None
+        if follower_loan:
+            self.follower_loan_id = follower_loan.get("id")
+            self.follower_loan_idnum = follower_loan.get("id_num")
+        else:
+            self.follower_loan_id = None
+            self.follower_loan_idnum = None
+        if precursor_loan:
+            self.precursor_loan_id = precursor_loan.get("id")
+            self.precursor_loan_idnum = precursor_loan.get("id_num")
+        else:
+            self.precursor_loan_id = None
+            self.precursor_loan_idnum = None
+        self.conditions = []
+        if conditions:
+            for condition_entry in conditions:
+                condition_entry["id_"] = condition_entry.get("id")
+                self.conditions.append(Condition(**condition_entry))
+        self.annuity_header = []
+        if annuity_header:
+            for header_entry in annuity_header:
+                header_entry["id_"] = header_entry.pop("id")
+                self.annuity_header.append(AnnuityHeaderItem(**header_entry))
+        self.object_assignments = []
+        if object_assignments:
+            for object_entry in object_assignments:
+                object_entry["id_"] = object_entry.pop("id")
+                self.object_assignments.append(ObjectAssignmentEntry(**object_entry))
+        self.repayment_plan = []
+        if repayment_plan:
+            for repayment_entry in repayment_plan:
+                repayment_entry["id_"] = repayment_entry.pop("id")
+                self.repayment_plan.append(RepaymentPlanEntry(**repayment_entry))
+        self.additional_fields = additional_fields
 
 
 class Ticket:

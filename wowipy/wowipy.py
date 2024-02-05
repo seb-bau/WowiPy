@@ -599,8 +599,8 @@ class WowiPy:
     def get_economic_units(self,
                            management_idnum: str = None,
                            owner_number: str = None,
-                           economic_idnum: str = None,
-                           economic_id: int = None,
+                           economic_unit_idnum: str = None,
+                           economic_unit_id: int = None,
                            limit: int = None,
                            offset: int = 0,
                            add_args: Dict = None,
@@ -611,10 +611,10 @@ class WowiPy:
             filter_params['managementIdNum'] = management_idnum
         if owner_number is not None:
             filter_params['ownerNumber'] = owner_number
-        if economic_idnum is not None:
-            filter_params['economicIdNum'] = economic_idnum
-        if economic_id is not None:
-            filter_params['economicId'] = economic_id
+        if economic_unit_idnum is not None:
+            filter_params['economicUnitIdNum'] = economic_unit_idnum
+        if economic_unit_id is not None:
+            filter_params['economicUnitId'] = economic_unit_id
         if limit is not None:
             filter_params['limit'] = limit
         filter_params['offset'] = offset

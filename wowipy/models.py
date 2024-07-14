@@ -1448,7 +1448,7 @@ class LicenseAgreement:
     start_contract: datetime
     end_of_contract: Optional[datetime]
     period_of_notice: Optional[PeriodOfNotice]
-    debit_entry_type: DebitEntryType
+    debit_entry_type: Optional[DebitEntryType]
     contractors: Optional[List[Contractor]]
 
     def __init__(self, id_: int, id_num: str, use_unit: Dict, restriction_of_use: Dict,
@@ -1482,7 +1482,10 @@ class LicenseAgreement:
             self.period_of_notice = PeriodOfNotice(**period_of_notice)
         else:
             self.period_of_notice = None
-        self.debit_entry_type = DebitEntryType(**debit_entry_type)
+        if debit_entry_type is not None:
+            self.debit_entry_type = DebitEntryType(**debit_entry_type)
+        else:
+            self.debit_entry_type = None
         self.contractors = contractors
         self.__dict__.update(kwargs)
 

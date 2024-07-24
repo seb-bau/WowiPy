@@ -855,7 +855,8 @@ class NaturalPerson:
     birth_date: datetime
     gender: Optional[Gender]
 
-    def __init__(self, first_name: str, last_name: str, birth_date: datetime, gender: Dict = None) -> None:
+    def __init__(self, first_name: str, last_name: str, birth_date: datetime, gender: Dict = None,
+                 **kwargs) -> None:
         self.first_name = first_name
         self.last_name = last_name
         self.birth_date = birth_date
@@ -863,6 +864,7 @@ class NaturalPerson:
             self.gender = Gender(**gender)
         else:
             self.gender = None
+        self.__dict__.update(kwargs)
 
 
 class Person:

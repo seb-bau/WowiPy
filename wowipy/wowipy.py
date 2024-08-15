@@ -2,10 +2,25 @@ import copy
 import logging
 import humps
 import pickle
+import base64
+import hashlib
+import os
 from jsonmerge import Merger
 from wowipy.rest_adapter import RestAdapter
 from wowipy.exceptions import WowiPyException
 from wowipy.models import *
+
+
+def file_to_base64(file_path):
+    with open(file_path, "rb") as file:
+        encoded_string = base64.b64encode(file.read()).decode('utf-8')
+    return encoded_string
+
+
+def sha1_checksum(base64_string):
+    sha1 = hashlib.sha1()
+    sha1.update(base64_string.encode('utf-8'))
+    return sha1.hexdigest()
 
 
 class WowiPy:
@@ -207,9 +222,9 @@ class WowiPy:
                     break
                 if tkey == self.CACHE_LICENSE_AGREEMENTS:
                     sobj = entry
-                    haystack = {
-                        sobj.id_num
-                    }
+                    # haystack = {
+                    #     sobj.id_num
+                    # }
                     if (find_pos == self.SEARCH_POS_CONTAINS and search_str in sobj.id_num) or \
                             (find_pos == self.SEARCH_POS_LEFT and sobj.id_num.startswith(search_str)):
                         if res.get(tkey) is None:
@@ -1282,7 +1297,6 @@ class WowiPy:
         if user_id is not None:
             data_dict["UserId"] = user_id
 
-        data_dict["MainEntityAssignment"] = None
         if main_assignment is not None:
             tmain_ass = {
                 "AssignmentEntityId": main_assignment.assignment_entity_id,
@@ -1300,7 +1314,6 @@ class WowiPy:
                 asslist.append(tass)
             if len(asslist) > 0:
                 data_dict["EntityAssignments"] = asslist
-        print(f"MAIN: {data_dict['MainEntityAssignment']}")
         result = self._rest_adapter.post(endpoint='CommunicationEdit/Ticket', data=data_dict)
         return result
 
@@ -1480,3 +1493,89 @@ class WowiPy:
             retlist.append(ret_la)
 
         return retlist
+
+    def get_file_type_catalog(self):
+        retlist = []
+        result = self._rest_adapter.get(endpoint='DocumentReadCatalog/FileType')
+        for entry in result.data:
+            data = dict(humps.decamelize(entry))
+            data['id_'] = data.pop('id')
+            ret_la = FileType(**data)
+            retlist.append(ret_la)
+
+        return retlist
+
+    def get_file_entity_catalog(self):
+        retlist = []
+        result = self._rest_adapter.get(endpoint='DocumentReadCatalog/FileEntity')
+
+        for entry in result.data:
+            data = dict(humps.decamelize(entry))
+            data['id_'] = data.pop('id')
+            ret_la = FileEntity(**data)
+            retlist.append(ret_la)
+
+        return retlist
+
+    def get_file_entity_id_from_name(self, file_entity_name: str) -> int:
+        file_entity_cat = self.get_file_entity_catalog()
+        for entity_cat in file_entity_cat:
+            if entity_cat.name.lower() == file_entity_name:
+                return entity_cat.id_
+        return 0
+
+    def get_file_entity_name_from_id(self, file_entity_id: int) -> str:
+        file_entity_cat = self.get_file_entity_catalog()
+        for entity_cat in file_entity_cat:
+            if entity_cat.id_ == file_entity_id:
+                return entity_cat.name
+        return ""
+
+    def get_file_type_id_from_name(self, file_type_name: str) -> int:
+        file_type_cat = self.get_file_type_catalog()
+        for type_cat in file_type_cat:
+            if type_cat.name.lower() == file_type_name.lower():
+                return type_cat.id_
+        return 0
+
+    def upload_file(self, file_data: FileData, file_path: str) -> Result:
+        if not file_data.file_type_id:
+            if not file_data.file_type_name:
+                return Result(status_code=400, message="Need either file_type_id or file_type_name for upload")
+            t_file_id = self.get_file_type_id_from_name(file_data.file_type_name)
+            if not t_file_id:
+                return Result(status_code=400, message=f"Unknown file_type_name '{file_data.file_type_name}'")
+            file_data.file_type_id = t_file_id
+
+        if not file_data.entity_id:
+            if not file_data.entity_name:
+                return Result(status_code=400, message="Need either entity_id or entity_name for upload")
+            t_entity_id = self.get_file_entity_id_from_name(file_data.entity_name)
+            if not t_entity_id:
+                return Result(status_code=400, message=f"Unknown entity_name '{file_data.entity_name}'")
+            file_data.entity_id = t_entity_id
+
+        if not file_data.entity_name:
+            file_data.entity_name = self.get_file_entity_name_from_id(file_data.entity_id)
+
+        if not file_data.data_privacy_category_id:
+            file_data.data_privacy_category_id = 1
+
+        if not os.path.exists(file_path):
+            return Result(status_code=400, message=f"File '{file_path}' does not exist.")
+
+        tcontent = file_to_base64(file_path)
+        tchecksum = sha1_checksum(tcontent)
+
+        data_dict = {
+            "Filename": file_data.file_name,
+            "CreationDate": file_data.creation_date,
+            "FileTypeId": file_data.file_type_id,
+            "DataPrivacyCategoryId": file_data.data_privacy_category_id,
+            "EntityId": file_data.entity_id,
+            "Contents": tcontent,
+            "Sha1Hash": tchecksum
+        }
+
+        result = self._rest_adapter.post(endpoint=f'DocumentEdit/{file_data.entity_type_name}/File', data=data_dict)
+        return result

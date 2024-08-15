@@ -245,6 +245,57 @@ class ValidContractPosition(IdNameCombination):
     pass
 
 
+class FileType(IdNameCombination):
+    pass
+
+
+class FileEntity(IdNameCombination):
+    pass
+
+
+class FileData:
+    id_: int
+    file_guid: str
+    file_name: str
+    entity_name: str
+    creation_date: str
+    entity_id: int
+    entity_idnum: str
+    entity_type_name: str
+    file_type_id: int
+    file_type_name: str
+    data_privacy_category_id: int
+    data_privacy_category_name: str
+
+    def __init__(self, file_name: str,
+                 creation_date_str: str,
+                 entity_type_name: str,
+                 id_: int = None,
+                 file_guid: str = None,
+                 entity_name: str = None,
+                 entity_id: int = None,
+                 entity_idnum: str = None,
+                 file_type_id: int = None,
+                 file_type_name: str = None,
+                 data_privacy_category_id: int = None,
+                 data_privacy_category_name: str = None,
+                 **kwargs):
+        if kwargs:
+            pass
+        self.id_ = id_
+        self.file_guid = file_guid
+        self.file_name = file_name
+        self.entity_name = entity_name
+        self.creation_date = creation_date_str
+        self.entity_id = entity_id
+        self.entity_idnum = entity_idnum
+        self.file_type_id = file_type_id
+        self.file_type_name = file_type_name
+        self.data_privacy_category_id = data_privacy_category_id
+        self.data_privacy_category_name = data_privacy_category_name
+        self.entity_type_name = entity_type_name
+
+
 class ContractPositionType:
     id_: int
     node_id: int

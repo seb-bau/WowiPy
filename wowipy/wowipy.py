@@ -17,10 +17,15 @@ def file_to_base64(file_path):
     return encoded_string
 
 
-def sha1_checksum(base64_string):
-    sha1 = hashlib.sha1()
-    sha1.update(base64_string.encode('utf-8'))
-    return sha1.hexdigest()
+def sha1sum(filename):
+    h = hashlib.sha1()
+    b = bytearray(128 * 1024)
+    mv = memoryview(b)
+    with open(filename, 'rb', buffering=0) as f:
+        # noinspection PyUnresolvedReferences
+        while n := f.readinto(mv):
+            h.update(mv[:n])
+    return h.hexdigest()
 
 
 class WowiPy:
@@ -1565,7 +1570,9 @@ class WowiPy:
             return Result(status_code=400, message=f"File '{file_path}' does not exist.")
 
         tcontent = file_to_base64(file_path)
-        tchecksum = sha1_checksum(tcontent)
+        print(tcontent)
+        tchecksum = sha1sum(file_path)
+        print(tchecksum)
 
         data_dict = {
             "Filename": file_data.file_name,

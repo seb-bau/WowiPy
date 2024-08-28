@@ -1589,12 +1589,17 @@ class TicketComment:
     created_at: datetime
     content: str
     user_name: str
+    user_id: Optional[int]
+    comment_from_api: Optional[bool]
 
-    def __init__(self, id_: int, created_at: str, content: str, user_name: str) -> None:
+    def __init__(self, id_: int, created_at: str, content: str, user_name: str, user_id: int = None,
+                 comment_from_api: bool = False) -> None:
         self.id_ = id_
         self.created_at = datetime.strptime(created_at, "%Y-%m-%dT%H:%M:%S.%f%z")
         self.content = content
         self.user_name = user_name
+        self.user_id = user_id
+        self.comment_from_api = comment_from_api
 
 
 class TicketAssignment:
@@ -2223,7 +2228,9 @@ class Ticket:
                     tcomment = TicketComment(id_=tentry["id"],
                                              created_at=tentry["created_at"],
                                              content=tentry["content"],
-                                             user_name=tentry["user_name"])
+                                             user_name=tentry["user_name"],
+                                             user_id=tentry["user_id"],
+                                             comment_from_api=tentry["comment_from_api"])
                     self.comments.append(tcomment)
                 except KeyError as e:
                     print(f"Key error: {e.args}")

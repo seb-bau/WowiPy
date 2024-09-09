@@ -1354,6 +1354,8 @@ class WowiPy:
 
         # Standardparameter, können via add_args überschrieben werden
         filter_params['showNullValues'] = 'true'
+        filter_params['includePersonCommunications'] = 'true'
+        filter_params['includeMainCommunication'] = 'true'
 
         if add_args is not None:
             filter_params.update(add_args)
@@ -1387,7 +1389,7 @@ class WowiPy:
             # Default Address wird auch entfernt
             try:
                 data.pop("default_address", None)
-                tperson = data.pop("person")
+                tperson = data.get("person")
                 data["person_id"] = tperson.get("id", None)
                 data["person_name"] = tperson.get("name", None)
                 data["id_"] = data.pop("id")

@@ -2306,9 +2306,11 @@ class ResponsibleOfficial:
     person_id: int
     person_name: str
     user_id: int
+    person: Optional[Person]
 
     def __init__(self, id_: int, code_short: str, automatic_mails_activated: bool,
-                 universal_responsibility_possible: bool, person_id: int, person_name: str, user_id: int):
+                 universal_responsibility_possible: bool, person_id: int, person_name: str, user_id: int,
+                 person: Dict = None):
         self.id_ = id_
         self.code_short = code_short
         self.automatic_mails_activated = automatic_mails_activated
@@ -2316,6 +2318,15 @@ class ResponsibleOfficial:
         self.person_id = person_id
         self.person_name = person_name
         self.user_id = user_id
+        if person:
+            try:
+                person["id_"] = person.pop("id")
+                tperson = Person(**person)
+                self.person = tperson
+            except KeyError as e:
+                print(f"Key error: {e.args}")
+        else:
+            self.person = None
 
 
 class JurisdictionListEntry:

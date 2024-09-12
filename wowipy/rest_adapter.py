@@ -93,7 +93,7 @@ class RestAdapter:
             'Authorization': f'Bearer {self.token}'
         }
         log_line_pre = f"method={http_method}, url={full_url}"
-        log_line_post = ', '.join((log_line_pre, "success={}, status_code={}, message={}"))
+        log_line_post = ', '.join((log_line_pre, "success={}, status_code={}, message={}, text={}"))
         response = None
         for _ in range(2):
             try:
@@ -123,7 +123,7 @@ class RestAdapter:
             raise WowiPyException("Bad JSON in response") from e
 
         is_success = 200 <= response.status_code <= 299
-        log_line = log_line_post.format(is_success, response.status_code, response.reason)
+        log_line = log_line_post.format(is_success, response.status_code, response.reason, response.text)
         if is_success:
             self._logger.debug(msg=log_line)
             return Result(response.status_code, message=response.reason, data=data_out)

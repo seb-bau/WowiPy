@@ -1218,6 +1218,34 @@ class WowiPy:
 
         return retlist
 
+    def get_departments(self,
+                        department_id: int = None,
+                        department_name: str = None,
+                        limit: int = 100,
+                        offset: int = 0) -> List[Department]:
+        filter_params = {}
+        if department_id:
+            filter_params['departmentId'] = department_id
+        if department_name:
+            filter_params['departmentName'] = department_name
+        filter_params['limit'] = limit
+        filter_params['offset'] = offset
+        filter_params['showNullValues'] = 'true'
+
+        retlist = []
+
+        result = self._rest_adapter.get(endpoint='CommercialInventory/Department', ep_params=filter_params,
+                                        force_refresh=True)
+        for entry in result.data:
+            data = dict(humps.decamelize(entry))
+            data['id_'] = data.pop('id')
+            data['type_id'] = data['department_type'].pop('id')
+            data['type_name'] = data['department_type'].pop('name')
+            ret_la = Department(**data)
+            retlist.append(ret_la)
+
+        return retlist
+
     def get_tickets(self,
                     ticket_id: int = None,
                     ticket_id_num: str = None,

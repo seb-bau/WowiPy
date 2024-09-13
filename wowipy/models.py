@@ -2329,6 +2329,57 @@ class ResponsibleOfficial:
             self.person = None
 
 
+class ResponsibleOfficialShort:
+    id_: int
+    code_short: str
+    person_id: int
+
+    def __init__(self, id_: int, code_short: str, person_id: int):
+        self.id_ = id_
+        self.code_short = code_short
+        self.person_id = person_id
+
+    def __repr__(self):
+        return f"Responsible Officla Short ID {self.id_} / Code Short {self.code_short} / Person ID {self.person_id}"
+
+
+class Department:
+    id_: int
+    id_num: str
+    name: str
+    management_id: Optional[int]
+    parent_id: Optional[int]
+    responsible_officials: Optional[list[ResponsibleOfficialShort]]
+    type_id: Optional[int]
+    type_name: Optional[str]
+
+    def __init__(self, id_: int, id_num: str, name: str, management_id: int = None, parent_id: int = None,
+                 responsible_officials: List[Dict] = None, type_id=None, type_name=None, **kwargs):
+        if kwargs:
+            pass
+        self.id_ = id_
+        self.id_num = id_num
+        self.name = name
+        self.management_id = management_id
+        self.parent_id = parent_id
+        self.responsible_officials = []
+        self.type_id = type_id
+        self.type_name = type_name
+        if responsible_officials:
+            for rentry in responsible_officials:
+                try:
+                    tresp = ResponsibleOfficialShort(id_=rentry["id"],
+                                                     code_short=rentry["code_short"],
+                                                     person_id=rentry["person_id"]
+                                                     )
+                    self.responsible_officials.append(tresp)
+                except KeyError as e:
+                    print(f"Key error: {e.args}")
+
+    def __repr__(self):
+        return f"Department {self.name} with {len(self.responsible_officials)} members."
+
+
 class JurisdictionListEntry:
     id_: int
     main_jurisdiction: bool

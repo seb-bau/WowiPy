@@ -1255,7 +1255,8 @@ class WowiPy:
                     limit: int = None,
                     offset: int = 0,
                     add_args: Dict = None,
-                    force_refresh: bool = False
+                    force_refresh: bool = False,
+                    fetch_all: bool = False,
                     ) -> List[Ticket]:
 
         filter_params = {}
@@ -1284,8 +1285,23 @@ class WowiPy:
 
         retlist = []
 
-        result = self._rest_adapter.get(endpoint='CommunicationRead/Ticket', ep_params=filter_params,
-                                        force_refresh=force_refresh)
+        if not fetch_all:
+            result = self._rest_adapter.get(endpoint='CommunicationRead/Ticket', ep_params=filter_params,
+                                            force_refresh=force_refresh)
+        else:
+            result = Result(0, "", [])
+            merge_schema = {"mergeStrategy": "append"}
+            merger = Merger(schema=merge_schema)
+            filter_params['offset'] = 0
+            filter_params['limit'] = 100
+            response_count = 100
+            while response_count == 100:
+                part_result = self._rest_adapter.get(endpoint='CommunicationRead/Ticket', ep_params=filter_params,
+                                                     force_refresh=force_refresh)
+                result.data = merger.merge(result.data, part_result.data)
+                filter_params['offset'] += 100
+                response_count = len(part_result.data)
+                print(f"Ticket-Count: {len(result.data)}")
         for entry in result.data:
             data = dict(humps.decamelize(entry))
             data['id_'] = data.pop('id')

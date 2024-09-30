@@ -727,6 +727,8 @@ class InvoiceReceipt:
     monetary_total: MonetaryTotal
     tax_total: TaxTotal
     commission_items: List[CommissionItem]
+    economic_unit_id: Optional[int]
+    economic_unit_idnum: Optional[str]
 
     def __init__(self, id_: int,
                  number: str,
@@ -737,6 +739,7 @@ class InvoiceReceipt:
                  tax_total: Dict,
                  payment_orders: List[Dict],
                  commission_items: List[Dict],
+                 economic_unit: Dict,
                  **kwargs) -> None:
         if kwargs:
             pass
@@ -771,6 +774,12 @@ class InvoiceReceipt:
                 commission_item_obj = CommissionItem(**commission_item)
                 tcommission_items.append(commission_item_obj)
         self.commission_items = tcommission_items
+        if economic_unit:
+            self.economic_unit_idnum = economic_unit.get("id_num")
+            self.economic_unit_id = economic_unit.get("id")
+        else:
+            self.economic_unit_id = None
+            self.economic_unit_idnum = None
 
 
 class Address:

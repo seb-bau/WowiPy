@@ -1600,9 +1600,7 @@ class WowiPy:
             return Result(status_code=400, message=f"File '{file_path}' does not exist.")
 
         tcontent = file_to_base64(file_path)
-        print(tcontent)
         tchecksum = sha1sum(file_path)
-        print(tchecksum)
 
         data_dict = {
             "Filename": file_data.file_name,

@@ -564,17 +564,20 @@ class Banking:
     use_virtual_iban: bool
     virtual_iban: str
     former_virtual_iban: str
-    collective_account: CollectiveAccount
+    collective_account: Optional[CollectiveAccount]
 
     def __init__(self, id_: int, use_virtual_iban: bool, virtual_iban: str, former_virtual_iban: str,
-                 collective_account: CollectiveAccount, **kwargs) -> None:
+                 collective_account: Dict, **kwargs) -> None:
         if kwargs:
             pass
         self.id_ = id_
         self.use_virtual_iban = use_virtual_iban
         self.virtual_iban = virtual_iban
         self.former_virtual_iban = former_virtual_iban
-        self.collective_account = collective_account
+        if collective_account:
+            self.collective_account = CollectiveAccount(**collective_account)
+        else:
+            self.collective_account = None
 
 
 class CompanyCode:
@@ -1589,6 +1592,65 @@ class VatRate:
         self.code = code
 
 
+class PaymentMode:
+    id_: int
+    active_from: datetime
+    active_to: Optional[datetime]
+    license_agreement: LicenseAgreementShort
+    mode_id: Optional[int]
+    mode_name: Optional[str]
+    type_id: Optional[int]
+    type_name: Optional[str]
+    sepa_id: Optional[int]
+    sepa_mandate_id: Optional[str]
+    sepa_iban: Optional[str]
+    bank_account_id: Optional[int]
+    bank_account_iban: Optional[str]
+    bank_account_bic: Optional[str]
+
+    def __init__(self, id_: int, active_from: datetime | str, active_to: datetime | str, license_agreement: Dict,
+                 mode: Dict, sepa_mandate: Dict, bank_account: Dict, **kwargs):
+        self.id_ = id_
+        if active_from:
+            if isinstance(active_from, str):
+                active_from = datetime.strptime(active_from, "%Y-%m-%d")
+        if active_to:
+            if isinstance(active_to, str):
+                active_to = datetime.strptime(active_to, "%Y-%m-%d")
+        self.active_from = active_from
+        self.active_to = active_to
+        license_agreement["id_"] = license_agreement.pop("id")
+        self.license_agreement = LicenseAgreementShort(**license_agreement)
+        if mode:
+            self.mode_id = mode.get("id")
+            self.mode_name = mode.get("name")
+
+        if "type" in kwargs.keys():
+            self.type_id = kwargs.get("type").get("id")
+            self.type_name = kwargs.get("type").get("name")
+        else:
+            self.type_id = None
+            self.type_name = None
+
+        if sepa_mandate:
+            self.sepa_id = sepa_mandate.get("id")
+            self.sepa_mandate_id = sepa_mandate.get("mandate_id")
+            self.sepa_iban = sepa_mandate.get("iban")
+        else:
+            self.sepa_id = None
+            self.sepa_mandate_id = None
+            self.sepa_iban = None
+
+        if bank_account:
+            self.bank_account_id = bank_account.get("id")
+            self.bank_account_iban = bank_account.get("iban")
+            self.bank_account_bic = bank_account.get("bic")
+        else:
+            self.bank_account_id = None
+            self.bank_account_bic = None
+            self.bank_account_iban = None
+
+
 class LicenseAgreement:
     id_: int
     id_num: str
@@ -1604,13 +1666,14 @@ class LicenseAgreement:
     period_of_notice: Optional[PeriodOfNotice]
     debit_entry_type: Optional[DebitEntryType]
     contractors: Optional[List[Contractor]]
+    banking: Optional[Banking]
 
     def __init__(self, id_: int, id_num: str, use_unit: Dict, restriction_of_use: Dict,
                  status_contract: Dict, life_of_contract: Dict, payment_interval: Dict,
                  dunning_data: Dict, start_contract: str, end_of_contract: str,
                  debit_entry_type: Dict,
                  period_of_notice: Dict = None, contractors: List[Contractor] = None,
-                 differing_maturity: int = None,
+                 differing_maturity: int = None, banking: Dict = None,
                  **kwargs) -> None:
         self.id_ = id_
         self.id_num = id_num
@@ -1641,6 +1704,12 @@ class LicenseAgreement:
         else:
             self.debit_entry_type = None
         self.contractors = contractors
+
+        if banking:
+            banking["id_"] = banking.pop("id")
+            self.banking = Banking(**banking)
+        else:
+            self.banking = None
         self.__dict__.update(kwargs)
 
 

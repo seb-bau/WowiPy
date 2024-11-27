@@ -505,69 +505,57 @@ class WowiPy:
                                license_agreement_idnum: str = None,
                                license_agreement_active_on: datetime = None,
                                person_idnum: str = None,
-                               limit: int = None,
+                               limit: int = 100,
                                offset: int = 0,
                                add_args: Dict = None,
                                add_contractors: bool = False,
                                fetch_all: bool = False,
-                               use_cache: bool = False,
                                ) -> List[LicenseAgreement]:
 
         filter_params = {}
-        if economic_unit_idnum is not None:
+        if economic_unit_idnum:
             filter_params['EconomicUnitIdNum'] = economic_unit_idnum
-        if use_unit_idnum is not None:
+        if use_unit_idnum:
             filter_params['UseUnitNumber'] = use_unit_idnum
-        if license_agreement_idnum is not None:
+        if license_agreement_idnum:
             filter_params['LicenseAgreementIdNum'] = license_agreement_idnum
-        if license_agreement_active_on is not None:
+        if license_agreement_active_on:
             filter_params['licenseAgreementActiveOn'] = license_agreement_active_on.strftime("%Y-%m-%d")
-        if person_idnum is not None:
+        if person_idnum:
             filter_params['personIdNum'] = person_idnum
-        if limit is not None:
-            filter_params['limit'] = limit
+
+        filter_params['limit'] = limit
         filter_params['offset'] = offset
         filter_params['showNullValues'] = 'true'
+        filter_params['includeBanking'] = 'true'
         if add_args is not None:
             filter_params.update(add_args)
 
         retlist = []
-        if use_cache:
-            cache_entry: LicenseAgreement
-            for cache_entry in self._cache[self.CACHE_LICENSE_AGREEMENTS]:
-                if (economic_unit_idnum is not None and cache_entry.use_unit.economic_unit == economic_unit_idnum) or \
-                        (use_unit_idnum is not None and cache_entry.use_unit.use_unit_number == use_unit_idnum) or \
-                        (license_agreement_idnum is not None and cache_entry.id_num == license_agreement_idnum) or \
-                        (economic_unit_idnum is None and use_unit_idnum is None and license_agreement_idnum is None):
-                    if add_contractors:
-                        cache_entry.contractors = self.get_contractors(license_agreement_id=cache_entry.id_,
-                                                                       use_cache=True)
-                    retlist.append(copy.deepcopy(cache_entry))
+        if not fetch_all:
+            result = self._rest_adapter.get(endpoint='RentAccounting/LicenseAgreements', ep_params=filter_params)
         else:
-            if not fetch_all:
-                result = self._rest_adapter.get(endpoint='RentAccounting/LicenseAgreements', ep_params=filter_params)
-            else:
-                result = Result(0, "", [])
-                merge_schema = {"mergeStrategy": "append"}
-                merger = Merger(schema=merge_schema)
-                filter_params['offset'] = 0
-                filter_params['limit'] = 100
-                response_count = 100
-                while response_count == 100:
-                    part_result = self._rest_adapter.get(endpoint='RentAccounting/LicenseAgreements',
-                                                         ep_params=filter_params)
-                    result.data = merger.merge(result.data, part_result.data)
-                    filter_params['offset'] += 100
-                    response_count = len(part_result.data)
-                    print(f"License-Agreement-Count: {len(result.data)}")
+            result = Result(0, "", [])
+            merge_schema = {"mergeStrategy": "append"}
+            merger = Merger(schema=merge_schema)
+            filter_params['offset'] = 0
+            filter_params['limit'] = 100
+            response_count = 100
+            while response_count == 100:
+                part_result = self._rest_adapter.get(endpoint='RentAccounting/LicenseAgreements',
+                                                     ep_params=filter_params)
+                result.data = merger.merge(result.data, part_result.data)
+                filter_params['offset'] += 100
+                response_count = len(part_result.data)
+                print(f"License-Agreement-Count: {len(result.data)}")
 
-            for entry in result.data:
-                data = dict(humps.decamelize(entry))
-                data['id_'] = data.pop('id')
-                if add_contractors:
-                    data['contractors'] = self.get_contractors(license_agreement_id=data.get("id_"))
-                ret_la = LicenseAgreement(**data)
-                retlist.append(ret_la)
+        for entry in result.data:
+            data = dict(humps.decamelize(entry))
+            data['id_'] = data.pop('id')
+            if add_contractors:
+                data['contractors'] = self.get_contractors(license_agreement_id=data.get("id_"))
+            ret_la = LicenseAgreement(**data)
+            retlist.append(ret_la)
         return retlist
 
     def get_managements(self,
@@ -1243,6 +1231,60 @@ class WowiPy:
             data['type_name'] = data['department_type'].pop('name')
             ret_la = Department(**data)
             retlist.append(ret_la)
+
+        return retlist
+
+    def get_paymenet_modes(self,
+                           license_agreement_id: int = None,
+                           license_agreement_idnum: str = None,
+                           payment_mode_active_on: datetime = None,
+                           limit: int = 100,
+                           offset: int = 0,
+                           fetch_all: bool = False,
+                           add_args: Dict = None) -> List[PaymentMode]:
+        filter_params = {}
+        if license_agreement_id:
+            filter_params['licenseAgreementId'] = license_agreement_id
+        if license_agreement_idnum:
+            filter_params['licenseAgreementIdNum'] = license_agreement_idnum
+        if payment_mode_active_on:
+            filter_params['paymentModeActiveOn'] = payment_mode_active_on.strftime("%Y-%m-%d")
+
+        filter_params['limit'] = limit
+        filter_params['offset'] = offset
+        filter_params['showNullValues'] = 'true'
+
+        if add_args is not None:
+            filter_params.update(add_args)
+
+        retlist = []
+
+        if not fetch_all:
+            result = self._rest_adapter.get(endpoint='RentAccountingPersonDetails/PaymentModes',
+                                            ep_params=filter_params,
+                                            force_refresh=True)
+        else:
+            result = Result(0, "", [])
+            merge_schema = {"mergeStrategy": "append"}
+            merger = Merger(schema=merge_schema)
+            filter_params['offset'] = 0
+            filter_params['limit'] = 100
+            response_count = 100
+            while response_count == 100:
+                part_result = self._rest_adapter.get(endpoint='RentAccountingPersonDetails/PaymentModes',
+                                                     ep_params=filter_params,
+                                                     force_refresh=True)
+                result.data = merger.merge(result.data, part_result.data)
+                filter_params['offset'] += 100
+                response_count = len(part_result.data)
+                print(f"Payment-Mode-Count: {len(result.data)}")
+
+        for entry in result.data:
+            data = dict(humps.decamelize(entry))
+            data['id_'] = data.pop('id')
+
+            ret_per = PaymentMode(**data)
+            retlist.append(ret_per)
 
         return retlist
 

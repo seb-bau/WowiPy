@@ -4,7 +4,9 @@ from datetime import datetime
 
 
 class Result:
-    def __init__(self, status_code: int, message: str = '', data: List[Dict] = None):
+    def __init__(self, status_code: int, message: str = '', data: List[Dict] = None, **kwargs):
+        if kwargs:
+            pass
         self.status_code = int(status_code)
         self.message = str(message)
         self.data = data if data else []
@@ -14,7 +16,9 @@ class CraftActivity:
     id_: int
     code: str
 
-    def __init__(self, id_: int, code: str) -> None:
+    def __init__(self, id_: int, code: str, **kwargs) -> None:
+        if kwargs:
+            pass
         self.id_ = id_
         self.code = code
 
@@ -23,7 +27,9 @@ class PaymentFileStatus:
     id_: int
     code: str
 
-    def __init__(self, id_: int, code: str) -> None:
+    def __init__(self, id_: int, code: str, **kwargs) -> None:
+        if kwargs:
+            pass
         self.id_ = id_
         self.code = code
 
@@ -32,7 +38,9 @@ class SalesTax:
     id_: int
     code: str
 
-    def __init__(self, id_: int, code: str) -> None:
+    def __init__(self, id_: int, code: str, **kwargs) -> None:
+        if kwargs:
+            pass
         self.id_ = id_
         self.code = code
 
@@ -41,7 +49,9 @@ class CommissionType:
     id_: int
     code: str
 
-    def __init__(self, id_: int, code: str) -> None:
+    def __init__(self, id_: int, code: str, **kwargs) -> None:
+        if kwargs:
+            pass
         self.id_ = id_
         self.code = code
 
@@ -50,7 +60,9 @@ class CommissionStatus:
     id_: int
     code: str
 
-    def __init__(self, id_: int, code: str) -> None:
+    def __init__(self, id_: int, code: str, **kwargs) -> None:
+        if kwargs:
+            pass
         self.id_ = id_
         self.code = code
 
@@ -76,7 +88,10 @@ class Commission:
                  acceptance_date: str,
                  completion_date: str,
                  commission_type: Dict,
-                 commission_status: Dict) -> None:
+                 commission_status: Dict,
+                 **kwargs) -> None:
+        if kwargs:
+            pass
         self.id_ = id_
         self.id_num = id_num
         self.code = code
@@ -119,7 +134,9 @@ class Component:
     id_: int
     name: str
 
-    def __init__(self, id_: int, name: str) -> None:
+    def __init__(self, id_: int, name: str, **kwargs) -> None:
+        if kwargs:
+            pass
         self.id_ = id_
         self.name = name
 
@@ -128,7 +145,9 @@ class Facility:
     id_: int
     name: str
 
-    def __init__(self, id_: int, name: str) -> None:
+    def __init__(self, id_: int, name: str, **kwargs) -> None:
+        if kwargs:
+            pass
         self.id_ = id_
         self.name = name
 
@@ -318,7 +337,9 @@ class ContractPositionType:
                  bgb_relevant: bool, is_part_of_net_rent: bool, using_cp_as_prepayment_block: bool,
                  assignment_prepayment: str, is_gross_rent_without_heating: bool, is_part_of_net_rent_census: bool,
                  is_basis_calculation_reminder_charge_interest: bool, is_prepayment_heating: bool,
-                 is_prepayment_running_cost: bool, report_as_sinking_fund: bool) -> None:
+                 is_prepayment_running_cost: bool, report_as_sinking_fund: bool, **kwargs) -> None:
+        if kwargs:
+            pass
         self.id_ = id_
         self.node_id = node_id
         self.name = name
@@ -342,7 +363,9 @@ class ContractPositionTypeSlim:
     name: str
     short_code: str
 
-    def __init__(self, id_: int, name: str, short_code: str) -> None:
+    def __init__(self, id_: int, name: str, short_code: str, **kwargs) -> None:
+        if kwargs:
+            pass
         self.id_ = id_
         self.name = name
         self.short_code = short_code
@@ -353,7 +376,9 @@ class Country:
     name: str
     code: str
 
-    def __init__(self, id_: int, name: str, code: str) -> None:
+    def __init__(self, id_: int, name: str, code: str, **kwargs) -> None:
+        if kwargs:
+            pass
         self.id_ = id_
         self.name = name
         self.code = code
@@ -363,7 +388,9 @@ class DunningLevel:
     id_: int
     code: str
 
-    def __init__(self, id_: int, code: str) -> None:
+    def __init__(self, id_: int, code: str, **kwargs) -> None:
+        if kwargs:
+            pass
         self.id_ = id_
         self.code = code
 
@@ -372,7 +399,9 @@ class Budget:
     id_: int
     code: str
 
-    def __init__(self, id_: int, code: str) -> None:
+    def __init__(self, id_: int, code: str, **kwargs) -> None:
+        if kwargs:
+            pass
         self.id_ = id_
         self.code = code
 
@@ -385,7 +414,9 @@ class BudgetDetail:
     hierarchy3_value: str
 
     def __init__(self, id_: int, budget_id: int, hierarchy1_value: str,
-                 hierarchy2_value: str, hierarchy3_value: str) -> None:
+                 hierarchy2_value: str, hierarchy3_value: str, **kwargs) -> None:
+        if kwargs:
+            pass
         self.id_ = id_
         self.budget_id = budget_id
         self.hierarchy1_value = hierarchy1_value
@@ -397,7 +428,9 @@ class BudgetData:
     budget: Budget
     budget_detail: BudgetDetail
 
-    def __init__(self, budget: Dict, budget_detail: Dict):
+    def __init__(self, budget: Dict, budget_detail: Dict, **kwargs):
+        if kwargs:
+            pass
         self.budget = Budget(**budget)
         self.budget_detail = BudgetDetail(**budget_detail)
 
@@ -406,7 +439,9 @@ class DunningData:
     dunningblock: bool
     dunning_level: Optional[DunningLevel]
 
-    def __init__(self, dunningblock: bool, dunning_level: Dict = None) -> None:
+    def __init__(self, dunningblock: bool, dunning_level: Dict = None, **kwargs) -> None:
+        if kwargs:
+            pass
         self.dunningblock = dunningblock
         if dunning_level is not None:
             dunning_level["id_"] = dunning_level.pop("id")
@@ -421,7 +456,9 @@ class RestrictionOfUse:
     name: str
     is_vacancy: bool
 
-    def __init__(self, id_: int, node_id: int, name: str, is_vacancy: bool) -> None:
+    def __init__(self, id_: int, node_id: int, name: str, is_vacancy: bool, **kwargs) -> None:
+        if kwargs:
+            pass
         self.id_ = id_
         self.node_id = node_id
         self.name = name
@@ -434,7 +471,9 @@ class FinancingTypeClass:
     classification_id: int
     classification_name: str
 
-    def __init__(self, id_: int, name: str, classification_id: int, classification_name: str) -> None:
+    def __init__(self, id_: int, name: str, classification_id: int, classification_name: str, **kwargs) -> None:
+        if kwargs:
+            pass
         self.id_ = id_
         self.name = name
         self.classification_id = classification_id
@@ -448,7 +487,9 @@ class UseUnitUsageType:
     classification_name: str
 
     def __init__(self, id_: int, classification_id: int, name: str = None,
-                 classification_name: str = None) -> None:
+                 classification_name: str = None, **kwargs) -> None:
+        if kwargs:
+            pass
         self.id_ = id_
         self.name = name
         self.classification_id = classification_id
@@ -460,7 +501,9 @@ class UseUnitTypeCatalogEntry:
     name: str
     classification: str
 
-    def __init__(self, id_: int, name: str, classification: str):
+    def __init__(self, id_: int, name: str, classification: str, **kwargs):
+        if kwargs:
+            pass
         self.id_ = id_
         self.name = name
         self.classification = classification
@@ -473,7 +516,9 @@ class UseUnitType:
     use_unit_usage_type: UseUnitUsageType
 
     def __init__(self, id_: int, valid_from: datetime,
-                 use_unit_usage_type: Dict, valid_to: datetime = None) -> None:
+                 use_unit_usage_type: Dict, valid_to: datetime = None, **kwargs) -> None:
+        if kwargs:
+            pass
         self.id_ = id_
         self.valid_from = valid_from
         self.valid_to = valid_to
@@ -489,7 +534,9 @@ class UseUnitShort:
     economic_unit: str
 
     def __init__(self, id_: int, use_unit_number: str, building_land_id: int = 0, economic_unit_id: int = 0,
-                 economic_unit: str = 0) -> None:
+                 economic_unit: str = 0, **kwargs) -> None:
+        if kwargs:
+            pass
         self.id_ = id_
         self.use_unit_number = use_unit_number
         self.building_land_id = building_land_id
@@ -503,7 +550,9 @@ class CollectiveAccount:
     bic: str
     account_holder: str
 
-    def __init__(self, no_real_bank_account: bool, iban: str, bic: str, account_holder: str) -> None:
+    def __init__(self, no_real_bank_account: bool, iban: str, bic: str, account_holder: str, **kwargs) -> None:
+        if kwargs:
+            pass
         self.no_real_bank_account = no_real_bank_account
         self.iban = iban
         self.bic = bic
@@ -518,7 +567,9 @@ class Banking:
     collective_account: CollectiveAccount
 
     def __init__(self, id_: int, use_virtual_iban: bool, virtual_iban: str, former_virtual_iban: str,
-                 collective_account: CollectiveAccount) -> None:
+                 collective_account: CollectiveAccount, **kwargs) -> None:
+        if kwargs:
+            pass
         self.id_ = id_
         self.use_virtual_iban = use_virtual_iban
         self.virtual_iban = virtual_iban
@@ -532,7 +583,9 @@ class CompanyCode:
     code: str
     arge_code: Optional[str]
 
-    def __init__(self, id_: int, name: str, code: str, arge_code: str = None) -> None:
+    def __init__(self, id_: int, name: str, code: str, arge_code: str = None, **kwargs) -> None:
+        if kwargs:
+            pass
         self.id_ = id_
         self.name = name
         self.code = code
@@ -545,7 +598,9 @@ class QuantityType:
     code: str
     arge_code: Optional[str]
 
-    def __init__(self, id_: int, name: str, code: str, arge_code: str = None) -> None:
+    def __init__(self, id_: int, name: str, code: str, arge_code: str = None, **kwargs) -> None:
+        if kwargs:
+            pass
         self.id_ = id_
         self.name = name
         self.code = code
@@ -558,7 +613,9 @@ class ServiceCatalogue:
     description: str
     quantity_type: Optional[QuantityType]
 
-    def __init__(self, id_: int, id_num: str, description: str, quantity_type: Dict) -> None:
+    def __init__(self, id_: int, id_num: str, description: str, quantity_type: Dict, **kwargs) -> None:
+        if kwargs:
+            pass
         self.id_ = id_
         self.id_num = id_num
         self.description = description
@@ -662,7 +719,10 @@ class PaymentOrderElement:
                  payment_order_number: str,
                  maturity: str,
                  transfer_date: str,
-                 payment_file_status: Dict) -> None:
+                 payment_file_status: Dict,
+                 **kwargs) -> None:
+        if kwargs:
+            pass
         self.payment_order_number = payment_order_number
         self.maturity = datetime.strptime(maturity, "%Y-%m-%d")
         self.transfer_date = datetime.strptime(transfer_date, "%Y-%m-%d")
@@ -676,7 +736,9 @@ class TaxSubtotal:
     tax_id: int
     tax_code: str
 
-    def __init__(self, net: int, vat: int, tax_id: int, tax_code: str) -> None:
+    def __init__(self, net: int, vat: int, tax_id: int, tax_code: str, **kwargs) -> None:
+        if kwargs:
+            pass
         self.net = net
         self.vat = vat
         self.tax_id = tax_id
@@ -687,7 +749,9 @@ class TaxTotal:
     tax_amount: int
     tax_subtotals: List[TaxSubtotal]
 
-    def __init__(self, tax_amount: int, tax_subtotals: List[Dict]) -> None:
+    def __init__(self, tax_amount: int, tax_subtotals: List[Dict], **kwargs) -> None:
+        if kwargs:
+            pass
         self.tax_amount = tax_amount
         self.tax_subtotals = []
         if tax_subtotals is not None:
@@ -800,7 +864,9 @@ class Address:
     def __init__(self, id_: int, zip_: str, town: str, street: str, house_number: str,
                  valid_from: datetime, street_complete: str, house_number_complete: str,
                  main_address: bool, address_type: dict, country: dict,
-                 house_number_addition: str = None, valid_to: datetime = None) -> None:
+                 house_number_addition: str = None, valid_to: datetime = None, **kwargs) -> None:
+        if kwargs:
+            pass
         self.id_ = id_
         self.zip_ = zip_
         self.town = town
@@ -830,7 +896,9 @@ class BankAccountType:
     id_: int
     code: str
 
-    def __init__(self, id_: int, code: str) -> None:
+    def __init__(self, id_: int, code: str, **kwargs) -> None:
+        if kwargs:
+            pass
         self.id_ = id_
         self.code = code
 
@@ -839,7 +907,9 @@ class BankAccountUsageType:
     id_: int
     code: str
 
-    def __init__(self, id_: int, code: str) -> None:
+    def __init__(self, id_: int, code: str, **kwargs) -> None:
+        if kwargs:
+            pass
         self.id_ = id_
         self.code = code
 
@@ -857,7 +927,9 @@ class BankAccount:
 
     def __init__(self, id_: int, bank_account_id: int, iban: str, bic: str, account_holder: str,
                  valid_from: datetime, valid_to: datetime, bank_account_type: Dict,
-                 bank_account_usage_type: Dict) -> None:
+                 bank_account_usage_type: Dict, **kwargs) -> None:
+        if kwargs:
+            pass
         self.id_ = id_
         self.bank_account_id = bank_account_id
         self.iban = iban
@@ -883,7 +955,9 @@ class Communication:
     communication_type: CommunicationType
 
     def __init__(self, id_: int, related_address_id: int, content: str, explanation: str, related_address: str,
-                 communication_type: Dict) -> None:
+                 communication_type: Dict, **kwargs) -> None:
+        if kwargs:
+            pass
         self.id_ = id_
         self.related_address_id = related_address_id
         self.content = content
@@ -901,7 +975,9 @@ class LegalPerson:
 
     def __init__(self, long_name1: str, long_name2: str = None, vat_id: str = None,
                  commercial_register_number: str = None,
-                 commercial_register_town: str = None) -> None:
+                 commercial_register_town: str = None, **kwargs) -> None:
+        if kwargs:
+            pass
         self.long_name1 = long_name1
         self.long_name2 = long_name2
         self.vat_id = vat_id
@@ -1057,7 +1133,9 @@ class OwnerShort:
     id_: int
     owner_number: str
 
-    def __init__(self, id_: int, owner_number: str) -> None:
+    def __init__(self, id_: int, owner_number: str, **kwargs) -> None:
+        if kwargs:
+            pass
         self.id_ = id_
         self.owner_number = owner_number
 
@@ -1155,7 +1233,9 @@ class Building:
                  building_type: Dict, move_in_date: datetime = None, construction_year: int = None,
                  construction_method: Dict = None, district: Dict = None,
                  monumental_protection_type: Dict = None, change_reason: Dict = None,
-                 building_number_of_storeys: int = None) -> None:
+                 building_number_of_storeys: int = None, **kwargs) -> None:
+        if kwargs:
+            pass
         self.construction_year = construction_year
         self.move_in_date = move_in_date
         self.building_number_of_storeys = building_number_of_storeys
@@ -1186,7 +1266,9 @@ class Floor:
     name: str
     level_to_ground: int
 
-    def __init__(self, id_: int, name: str, level_to_ground: int) -> None:
+    def __init__(self, id_: int, name: str, level_to_ground: int, **kwargs) -> None:
+        if kwargs:
+            pass
         self.id_ = id_
         self.name = name
         self.level_to_ground = level_to_ground
@@ -1205,7 +1287,9 @@ class EstateAddress:
 
     def __init__(self, zip_: str, town: str, street: str, house_number: str,
                  country_id: int, country_code: str, street_complete: str, house_number_complete: str,
-                 house_number_addition: str = None) -> None:
+                 house_number_addition: str = None, **kwargs) -> None:
+        if kwargs:
+            pass
         self.zip_ = zip_
         self.town = town
         self.street = street
@@ -1274,7 +1358,9 @@ class BuildingLandShort:
     id_num: str
     building_land_type: str
 
-    def __init__(self, id_: int, id_num: str, building_land_type: str) -> None:
+    def __init__(self, id_: int, id_num: str, building_land_type: str, **kwargs) -> None:
+        if kwargs:
+            pass
         self.id_ = id_
         self.id_num = id_num
         self.building_land_type = building_land_type
@@ -1330,7 +1416,9 @@ class BillingUnit:
     def __init__(self, id_: int, value: int, valid_from: datetime,
                  is_base_component_cold_water: bool, is_base_component_heating: bool,
                  is_base_component_warm_water: bool, quantity_type: Dict,
-                 valid_to: datetime = None) -> None:
+                 valid_to: datetime = None, **kwargs) -> None:
+        if kwargs:
+            pass
         self.id_ = id_
         self.value = value
         self.valid_from = valid_from
@@ -1458,7 +1546,9 @@ class Contractor:
                  license_agreement: str, start_contract: datetime,
                  end_of_contract: datetime, contractual_use_valid_from: datetime,
                  contractual_use_valid_to: datetime, contractor_type: Dict,
-                 use_unit: Dict, person: Dict, default_address: Dict) -> None:
+                 use_unit: Dict, person: Dict, default_address: Dict, **kwargs) -> None:
+        if kwargs:
+            pass
         self.id_ = id_
         self.license_agreement_id = license_agreement_id
         self.license_agreement = license_agreement
@@ -1481,7 +1571,9 @@ class LicenseAgreementShort:
     id_num: str
     use_unit: UseUnitShort
 
-    def __init__(self, id_: int, id_num: str, use_unit: Dict) -> None:
+    def __init__(self, id_: int, id_num: str, use_unit: Dict, **kwargs) -> None:
+        if kwargs:
+            pass
         self.id_ = id_
         self.id_num = id_num
         use_unit["id_"] = use_unit.pop("id")
@@ -1570,7 +1662,10 @@ class ContractPosition:
                  vat_rate: Dict, valid_contract_position: Dict,
                  change_reason_contracts: Dict,
                  contract_position_type: Dict,
-                 contract_position_type_slim: Dict) -> None:
+                 contract_position_type_slim: Dict,
+                 **kwargs) -> None:
+        if kwargs:
+            pass
         self.id_ = id_
         self.net_amount = net_amount
         self.amount = amount
@@ -1602,7 +1697,9 @@ class TicketComment:
     comment_from_api: Optional[bool]
 
     def __init__(self, id_: int, created_at: str, content: str, user_name: str, user_id: int = None,
-                 comment_from_api: bool = False) -> None:
+                 comment_from_api: bool = False, **kwargs) -> None:
+        if kwargs:
+            pass
         self.id_ = id_
         self.created_at = datetime.strptime(created_at, "%Y-%m-%dT%H:%M:%S.%f%z")
         self.content = content
@@ -1618,7 +1715,9 @@ class TicketAssignment:
     entity_id: int
 
     def __init__(self, assignment_entity_id: int, entity_id: int, id_: int = 0,
-                 assignment_entity_code: str = "") -> None:
+                 assignment_entity_code: str = "", **kwargs) -> None:
+        if kwargs:
+            pass
         self.id_ = id_
         self.assignment_entity_id = assignment_entity_id
         self.assignment_entity_code = assignment_entity_code
@@ -1832,7 +1931,9 @@ class ObjectAssignmentEntry:
     object_allocation_type_id: Optional[int]
     object_allocation_type: Optional[str]
 
-    def __init__(self, id_: int, nominal_amount: Decimal, economic_unit: Dict, object_allocation_type: Dict):
+    def __init__(self, id_: int, nominal_amount: Decimal, economic_unit: Dict, object_allocation_type: Dict, **kwargs):
+        if kwargs:
+            pass
         self.id_ = id_
         self.nominal_amount = nominal_amount
         if economic_unit is not None:
@@ -1966,7 +2067,10 @@ class AnnuityHeaderItem:
                  annuity_per_maturity: Decimal,
                  term_from: str,
                  term_to: str,
-                 conditions: List[Dict]):
+                 conditions: List[Dict],
+                 **kwargs):
+        if kwargs:
+            pass
         self.id_ = id_
         self.annuity_per_maturity = annuity_per_maturity
         self.term_from = datetime.strptime(term_from, "%Y-%m-%d")
@@ -2069,7 +2173,10 @@ class Loan:
                  object_assignments: List[Dict],
                  repayment_plan: List[Dict],
                  additional_fields: List[Dict],
+                 **kwargs
                  ):
+        if kwargs:
+            pass
         self.id_ = id_
         self.id_num = id_num
         self.company_code = company_code.get("code")
@@ -2206,8 +2313,11 @@ class Ticket:
                  source: Dict,
                  comments: List[Dict],
                  main_assignment: Dict,
-                 assignment: List[Dict]
+                 assignment: List[Dict],
+                 **kwargs
                  ) -> None:
+        if kwargs:
+            pass
         self.id_ = id_
         self.id_num = id_num
         try:
@@ -2283,8 +2393,10 @@ class CommunicationCatalog:
     ticket_status_id: Dict
 
     def __init__(self,
-                 source_catalogues: List[Dict]
+                 source_catalogues: List[Dict], **kwargs
                  ) -> None:
+        if kwargs:
+            pass
         dicts = []
         dicts_rev = []
         for tcat in source_catalogues:
@@ -2319,7 +2431,9 @@ class ResponsibleOfficial:
 
     def __init__(self, id_: int, code_short: str, automatic_mails_activated: bool,
                  universal_responsibility_possible: bool, person_id: int, person_name: str, user_id: int,
-                 person: Dict = None):
+                 person: Dict = None, **kwargs):
+        if kwargs:
+            pass
         self.id_ = id_
         self.code_short = code_short
         self.automatic_mails_activated = automatic_mails_activated
@@ -2343,7 +2457,9 @@ class ResponsibleOfficialShort:
     code_short: str
     person_id: int
 
-    def __init__(self, id_: int, code_short: str, person_id: int):
+    def __init__(self, id_: int, code_short: str, person_id: int, **kwargs):
+        if kwargs:
+            pass
         self.id_ = id_
         self.code_short = code_short
         self.person_id = person_id
@@ -2399,7 +2515,9 @@ class JurisdictionListEntry:
     department_name: Optional[str]
 
     def __init__(self, id_: int, main_jurisdiction: bool, responsible_official: dict,
-                 department_type: dict, department: dict):
+                 department_type: dict, department: dict, **kwargs):
+        if kwargs:
+            pass
         self.id_ = id_
         self.main_jurisdiction = main_jurisdiction
         responsible_official["id_"] = responsible_official.pop("id")
@@ -2424,7 +2542,9 @@ class UseUnitJurisdiction:
 
     def __init__(self, use_unit: dict, use_unit_universal_responsibility: bool,
                  use_unit_universal_responsible_official: dict, economic_unit_universal_responsibility: bool,
-                 economic_unit_universal_responsible_official, use_unit_jurisdiction_list: List[Dict]):
+                 economic_unit_universal_responsible_official, use_unit_jurisdiction_list: List[Dict], **kwargs):
+        if kwargs:
+            pass
         use_unit["id_"] = use_unit.pop("id")
         self.use_unit = UseUnitShort(**use_unit)
         self.use_unit_universal_responsibility = use_unit_universal_responsibility
@@ -2458,7 +2578,9 @@ class EconomicUnitJurisdiction:
     economic_unit_jurisdiction_list: List[JurisdictionListEntry]
 
     def __init__(self, economic_unit: dict, economic_unit_universal_responsibility: bool,
-                 economic_unit_universal_responsible_official, economic_unit_jurisdiction_list: List[Dict]):
+                 economic_unit_universal_responsible_official, economic_unit_jurisdiction_list: List[Dict], **kwargs):
+        if kwargs:
+            pass
         economic_unit["id_"] = economic_unit.pop("id")
         self.economic_unit = EconomicUnitShort(**economic_unit)
         self.economic_unit_universal_responsibility = economic_unit_universal_responsibility

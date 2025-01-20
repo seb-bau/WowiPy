@@ -2665,3 +2665,64 @@ class EconomicUnitJurisdiction:
                 juris_entry["id_"] = juris_entry.pop("id")
                 new_juris_entry = JurisdictionListEntry(**juris_entry)
                 self.economic_unit_jurisdiction_list.append(new_juris_entry)
+
+
+class CooperativeMembership:
+    id_: int
+    id_num: str
+    creation_date = datetime
+    valid_from: datetime
+    valid_to: Optional[datetime]
+    is_payout_block_account: bool
+    cooperative_account_clearing_lock: bool
+    subsidy_application_for_several_fiscal_years_allowed: bool
+    no_participation_electoral_district: bool
+    active_amount_sum: Decimal
+    active_amount_sum: Decimal
+    membership_status_id: int
+    membership_status_code: str
+    electoral_district_id: Optional[int]
+    electoral_district_code: Optional[str]
+    membership_end_reason_id: Optional[int]
+    membership_end_reason_code: Optional[str]
+    description: Optional[str]
+    active_main_member_person_id: Optional[int]
+    active_main_member_person_id_num: Optional[str]
+
+    def __init__(self, **kwargs):
+        self.id_ = kwargs.get("id")
+        self.id_num = kwargs.get("id_num")
+        self.creation_date = datetime.strptime(kwargs.get("creation_date"), "%Y-%m-%d")
+        self.valid_from = datetime.strptime(kwargs.get("valid_from"), "%Y-%m-%d")
+        t_valid_to = kwargs.get("valid_to")
+        if t_valid_to:
+            t_valid_to = datetime.strptime(t_valid_to, "%Y-%m-%d")
+        self.valid_to = t_valid_to
+        self.is_payout_block_account = kwargs.get("is_payout_block_account")
+        self.cooperative_account_clearing_lock = kwargs.get("cooperative_account_clearing_lock")
+        self.subsidy_application_for_several_fiscal_years_allowed = kwargs.get(
+            "subsidy_application_for_several_fiscal_years_allowed")
+        self.no_participation_electoral_district = kwargs.get("no_participation_electoral_district")
+        self.active_amount_sum = kwargs.get("active_amount_sum")
+        self.active_count_sum = kwargs.get("active_count_sum")
+        self.membership_status_id = kwargs.get("membership_status").get("id")
+        self.membership_status_code = kwargs.get("membership_status").get("code")
+        if kwargs.get("electoral_district"):
+            self.electoral_district_id = kwargs.get("electoral_district").get("id")
+            self.electoral_district_code = kwargs.get("electoral_district").get("code")
+        else:
+            self.electoral_district_id = None
+            self.electoral_district_code = None
+        if kwargs.get("membership_end_reason"):
+            self.membership_end_reason_id = kwargs.get("membership_end_reason").get("id")
+            self.membership_end_reason_code = kwargs.get("membership_end_reason").get("code")
+        else:
+            self.membership_end_reason_id = None
+            self.membership_end_reason_code = None
+        self.description = kwargs.get("description")
+        if kwargs.get("active_main_member"):
+            self.active_main_member_person_id = kwargs.get("active_main_member").get("person_id")
+            self.active_main_member_person_id_num = kwargs.get("active_main_member").get("id_num")
+        else:
+            self.active_main_member_person_id = None
+            self.active_main_member_person_id_num = None

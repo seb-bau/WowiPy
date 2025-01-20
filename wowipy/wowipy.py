@@ -1672,3 +1672,68 @@ class WowiPy:
 
         result = self._rest_adapter.post(endpoint=f'DocumentEdit/{file_data.entity_type_name}/File', data=data_dict)
         return result
+
+    def get_memberships(self,
+                        membership_id: int = None,
+                        membership_id_num: str = None,
+                        person_id: int = None,
+                        person_id_num: str = None,
+                        active_on: str | datetime = None,
+                        limit: int = None,
+                        offset: int = 0,
+                        add_args: Dict = None,
+                        force_refresh: bool = True,
+                        fetch_all: bool = False,
+                        ) -> List[CooperativeMembership]:
+
+        filter_params = {}
+        if active_on:
+            if isinstance(active_on, str):
+                filter_params['activeOn'] = active_on
+            elif isinstance(active_on, datetime):
+                filter_params['activeOn'] = datetime.strftime(active_on, "%Y-%m-%d")
+        if membership_id:
+            filter_params['cooperativeMembershipId'] = membership_id
+        if membership_id_num:
+            filter_params['cooperativeMembershipIdNum'] = membership_id_num
+        if person_id:
+            filter_params['personId'] = person_id
+        if person_id_num:
+            filter_params['personIdNum'] = person_id_num
+
+        if limit is not None:
+            filter_params['limit'] = limit
+        filter_params['offset'] = offset
+
+        filter_params['showNullValues'] = 'true'
+
+        if add_args is not None:
+            filter_params.update(add_args)
+
+        retlist = []
+
+        if not fetch_all:
+            result = self._rest_adapter.get(endpoint='CooperativeManagement/CooperativeMemberships',
+                                            ep_params=filter_params,
+                                            force_refresh=force_refresh)
+        else:
+            result = Result(0, "", [])
+            merge_schema = {"mergeStrategy": "append"}
+            merger = Merger(schema=merge_schema)
+            filter_params['offset'] = 0
+            filter_params['limit'] = 100
+            response_count = 100
+            while response_count == 100:
+                part_result = self._rest_adapter.get(endpoint='CooperativeManagement/CooperativeMemberships',
+                                                     ep_params=filter_params,
+                                                     force_refresh=force_refresh)
+                result.data = merger.merge(result.data, part_result.data)
+                filter_params['offset'] += 100
+                response_count = len(part_result.data)
+                print(f"Membership-Count: {len(result.data)}")
+        for entry in result.data:
+            data = dict(humps.decamelize(entry))
+            ret_la = CooperativeMembership(**data)
+            retlist.append(ret_la)
+
+        return retlist

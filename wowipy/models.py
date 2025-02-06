@@ -1438,7 +1438,7 @@ class UseUnit:
     building_land: BuildingLandShort
     economic_unit: EconomicUnitShort
     estate_address: EstateAddress
-    financing_type: FinancingTypeClass
+    financing_type: Optional[FinancingTypeClass]
     current_use_unit_type: UseUnitType
     usable_space: int
     living_space: int
@@ -1465,7 +1465,7 @@ class UseUnit:
 
     def __init__(self, id_: int, id_num: str,
                  building_land: Dict, economic_unit: Dict,
-                 estate_address: Dict, financing_type: Dict,
+                 estate_address: Dict,
                  current_use_unit_type: Dict, usable_space: int,
                  living_space: int, heating_space: int,
                  management_start: datetime,
@@ -1478,7 +1478,7 @@ class UseUnit:
                  exit_reason: Dict = None, billing_units: List[BillingUnit] = None,
                  company_code: Dict = None, binding_end_date: datetime = None, exit_date: datetime = None,
                  management_end: datetime = None, target_rent: int = None,
-                 residential_authorization: Dict = None, **kwargs) -> None:
+                 residential_authorization: Dict = None, financing_type: Dict = None, **kwargs) -> None:
         self.id_ = id_
         self.id_num = id_num
         building_land["id_"] = building_land.pop("id")
@@ -1486,8 +1486,11 @@ class UseUnit:
         economic_unit["id_"] = economic_unit.pop("id")
         self.economic_unit = EconomicUnitShort(**economic_unit)
         self.estate_address = EstateAddress(**estate_address)
-        financing_type["id_"] = financing_type.pop("id")
-        self.financing_type = FinancingTypeClass(**financing_type)
+        if financing_type:
+            financing_type["id_"] = financing_type.pop("id")
+            self.financing_type = FinancingTypeClass(**financing_type)
+        else:
+            self.financing_type = None
         current_use_unit_type["id_"] = current_use_unit_type.pop("id")
         self.current_use_unit_type = UseUnitType(**current_use_unit_type)
         self.usable_space = usable_space

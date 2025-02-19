@@ -1,6 +1,7 @@
 from typing import List, Dict, Optional
 from decimal import Decimal
 from datetime import datetime
+from datetime import date
 
 
 class Result:
@@ -993,16 +994,26 @@ class NaturalPerson:
     last_name: str
     birth_date: datetime
     gender: Optional[Gender]
+    death_date: Optional[date]
+    title: str
 
     def __init__(self, first_name: str, last_name: str, birth_date: datetime, gender: Dict = None,
                  **kwargs) -> None:
         self.first_name = first_name
         self.last_name = last_name
         self.birth_date = birth_date
+        self.title = kwargs.get("title")
         if gender is not None:
             self.gender = Gender(**gender)
         else:
             self.gender = None
+        if kwargs.get("death_date"):
+            try:
+                self.death_date = datetime.strptime(kwargs.get("death_date"), "%Y-%m-%d").date()
+            except (ValueError, TypeError):
+                self.death_date = None
+        else:
+            self.death_date = None
         self.__dict__.update(kwargs)
 
 

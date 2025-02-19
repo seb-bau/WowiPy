@@ -4,6 +4,16 @@ from datetime import datetime
 from datetime import date
 
 
+def convert_to_date(date_str):
+    try:
+        return datetime.strptime(date_str, "%Y-%m-%d").date()
+    except ValueError:
+        try:
+            return datetime.fromisoformat(date_str).date()
+        except ValueError:
+            return None
+
+
 class Result:
     def __init__(self, status_code: int, message: str = '', data: List[Dict] = None, **kwargs):
         if kwargs:
@@ -1008,12 +1018,10 @@ class NaturalPerson:
         else:
             self.gender = None
         if kwargs.get("death_date"):
-            try:
-                self.death_date = datetime.strptime(kwargs.get("death_date"), "%Y-%m-%d").date()
-            except (ValueError, TypeError):
-                self.death_date = None
+            self.death_date = convert_to_date(kwargs.pop("death_date"))
         else:
             self.death_date = None
+
         self.__dict__.update(kwargs)
 
 

@@ -1234,14 +1234,15 @@ class WowiPy:
 
         return retlist
 
-    def get_paymenet_modes(self,
-                           license_agreement_id: int = None,
-                           license_agreement_idnum: str = None,
-                           payment_mode_active_on: datetime = None,
-                           limit: int = 100,
-                           offset: int = 0,
-                           fetch_all: bool = False,
-                           add_args: Dict = None) -> List[PaymentMode]:
+    def get_payment_modes(self,
+                          license_agreement_id: int = None,
+                          license_agreement_idnum: str = None,
+                          payment_mode_active_on: datetime = None,
+                          license_agreement_active_on: datetime = None,
+                          limit: int = 100,
+                          offset: int = 0,
+                          fetch_all: bool = False,
+                          add_args: Dict = None) -> List[PaymentMode]:
         filter_params = {}
         if license_agreement_id:
             filter_params['licenseAgreementId'] = license_agreement_id
@@ -1249,6 +1250,8 @@ class WowiPy:
             filter_params['licenseAgreementIdNum'] = license_agreement_idnum
         if payment_mode_active_on:
             filter_params['paymentModeActiveOn'] = payment_mode_active_on.strftime("%Y-%m-%d")
+        if license_agreement_active_on:
+            filter_params['licenseAgreementActiveOn'] = license_agreement_active_on.strftime("%Y-%m-%d")
 
         filter_params['limit'] = limit
         filter_params['offset'] = offset

@@ -1476,7 +1476,7 @@ class UseUnit:
     position: Optional[Position]
     floor: Optional[Floor]
     residential_authorization: Optional[ResidentalAuthorization]
-    entry_reason: EntryReason
+    entry_reason: Optional[EntryReason]
     exit_reason: Optional[ExitReason]
     billing_units: List[BillingUnit]
     use_unit_types: List[UseUnitType]
@@ -1539,7 +1539,10 @@ class UseUnit:
             self.residential_authorization = ResidentalAuthorization(**residential_authorization)
         else:
             self.residential_authorization = None
-        self.entry_reason = EntryReason(**entry_reason)
+        if entry_reason is not None:
+            self.entry_reason = EntryReason(**entry_reason)
+        else:
+            self.entry_reason = None
         if exit_reason is not None:
             self.exit_reason = ExitReason(**exit_reason)
         else:

@@ -1497,7 +1497,7 @@ class UseUnit:
                  exit_reason: Dict = None, billing_units: List[BillingUnit] = None,
                  company_code: Dict = None, binding_end_date: datetime = None, exit_date: datetime = None,
                  management_end: datetime = None, target_rent: int = None,
-                 residential_authorization: Dict = None, financing_type: Dict = None, **kwargs) -> None:
+                 residential_authorization: Dict = None, **kwargs) -> None:
         self.id_ = id_
         self.id_num = id_num
         building_land["id_"] = building_land.pop("id")
@@ -1505,9 +1505,10 @@ class UseUnit:
         economic_unit["id_"] = economic_unit.pop("id")
         self.economic_unit = EconomicUnitShort(**economic_unit)
         self.estate_address = EstateAddress(**estate_address)
-        if financing_type:
-            financing_type["id_"] = financing_type.pop("id")
-            self.financing_type = FinancingTypeClass(**financing_type)
+        if kwargs["current_financing_type"] and kwargs["current_financing_type"]["financing_type_catalog"]:
+            kwargs["current_financing_type"]["financing_type_catalog"]["id_"] = (
+                kwargs["current_financing_type"]["financing_type_catalog"].pop("id"))
+            self.financing_type = FinancingTypeClass(**kwargs["current_financing_type"]["financing_type_catalog"])
         else:
             self.financing_type = None
         current_use_unit_type["id_"] = current_use_unit_type.pop("id")
@@ -2751,3 +2752,152 @@ class CooperativeMembership:
         else:
             self.active_main_member_person_id = None
             self.active_main_member_person_id_num = None
+
+
+class FacilityCatalogElement:
+    id_: int
+    name: str
+    status_id: int
+    status_name: str
+    available_economic_unit_land: bool
+    available_building: bool
+    available_use_unit: bool
+    repair_relevance: bool
+
+    def __init__(self, **kwargs):
+        self.id_ = kwargs.get("id")
+        self.name = kwargs.get("name")
+        self.status_id = kwargs.get("status").get("id")
+        self.status_name = kwargs.get("status").get("name")
+        self.available_economic_unit_land = kwargs.get("available_economic_unit_land")
+        self.available_building = kwargs.get("available_building")
+        self.available_use_unit = kwargs.get("available_use_unit")
+        self.repair_relevance = kwargs.get("repair_relevance")
+
+    def __repr__(self):
+        return f"Facility Type {self.name} ({self.id_})"
+
+
+class ComponentCatalogElement:
+    id_: int
+    name: str
+    comment: Optional[str]
+    facility_catalog_id: int
+    facility_catalog_name: str
+    is_maintenance_relevant: bool
+    is_repair_relevant: bool
+    is_lease_relevant: bool
+    is_warranty_relevant: bool
+    quantity_type_id: int
+    quantity_type_name: str
+    quantity_type_code: str
+    is_metering_device: bool
+
+    def __init__(self, **kwargs):
+        self.id_ = kwargs.get("id")
+        self.name = kwargs.get("name")
+        self.comment = kwargs.get("comment")
+        self.facility_catalog_id = kwargs.get("facility_catalog").get("id")
+        self.facility_catalog_name = kwargs.get("facility_catalog").get("name")
+        self.is_maintenance_relevant = kwargs.get("is_maintenance_relevant")
+        self.is_repair_relevant = kwargs.get("is_repair_relevant")
+        self.is_lease_relevant = kwargs.get("is_lease_relevant")
+        self.is_warranty_relevant = kwargs.get("is_warranty_relevant")
+        self.quantity_type_id = kwargs.get("quantity_type").get("id")
+        self.quantity_type_name = kwargs.get("quantity_type").get("name")
+        self.quantity_type_code = kwargs.get("quantity_type").get("code")
+        self.is_metering_device = kwargs.get("is_metering_device")
+
+    def __repr__(self):
+        return f"Component Catalog Element {self.name} ({self.id_})"
+
+
+class FacilityElement:
+    id_: int
+    name: str
+    count: int
+    inactive: bool
+    status_id: int
+    status_name: str
+    facility_catalog_id: int
+    facility_catalog_name: str
+    building_id: Optional[int]
+    property_id: Optional[int]
+    use_unit_id: Optional[int]
+    economic_unit_id: Optional[int]
+
+    def __init__(self, **kwargs):
+        self.id_ = kwargs.get("id")
+        self.name = kwargs.get("name")
+        self.status_id = kwargs.get("status").get("id")
+        self.status_name = kwargs.get("status").get("name")
+        self.count = kwargs.get("count")
+        self.inactive = kwargs.get("inactive")
+        self.facility_catalog_id = kwargs.get("facility_catalog").get("id")
+        self.facility_catalog_name = kwargs.get("facility_catalog").get("name")
+        self.building_id = kwargs.get("building_id")
+        self.property_id = kwargs.get("property_id")
+        self.use_unit_id = kwargs.get("use_unit_id")
+        self.economic_unit_id = kwargs.get("economic_unit_id")
+
+    def __repr__(self):
+        return f"Facility {self.name} ({self.id_}) of building {self.building_id} use_unit {self.use_unit_id}"
+
+
+class UnderComponent:
+    id_: int
+    name: str
+
+    def __init__(self, **kwargs):
+        self.id_ = kwargs.get("id")
+        self.name = kwargs.get("name")
+
+    def __repr__(self):
+        return f"Unter Component '{self.name}' ({self.id_})"
+
+
+class ComponentElement:
+    id_: int
+    name: str
+    count: Decimal
+    facility_is_inactive: bool
+    repair_relevance: bool
+    lease_relevance: bool
+    comment: str
+    acquisition_date: str
+    status_id: int
+    status_name: str
+    valid_from: str
+    valid_to: Optional[str]
+    component_catalog_id: int
+    # metering_device: Optional[bool] <-- Welcher Datentyp?
+    facility_id: Optional[int]
+    building_id: Optional[int]
+    economic_unit_id: Optional[int]
+    use_unit_id: Optional[int]
+    under_components: Optional[List[UnderComponent]]
+
+    def __init__(self, **kwargs):
+        self.id_ = kwargs.get("id")
+        self.name = kwargs.get("name")
+        self.count = kwargs.get("count")
+        self.facility_is_inactive = kwargs.get("facility_is_inactive")
+        self.repair_relevance = kwargs.get("repair_relevance")
+        self.lease_relevance = kwargs.get("lease_relevance")
+        self.comment = kwargs.get("comment")
+        self.acquisition_date = kwargs.get("acquisition_date")
+        self.status_id = kwargs.get("status").get("id")
+        self.status_name = kwargs.get("status").get("name")
+        self.valid_from = kwargs.get("valid_from")
+        self.valid_to = kwargs.get("valid_to")
+        self.component_catalog_id = kwargs.get("component_catalog").get("id")
+        self.facility_id = kwargs.get("facility_id")
+        self.building_id = kwargs.get("building_id")
+        self.economic_unit_id = kwargs.get("economic_unit_id")
+        self.use_unit_id = kwargs.get("use_unit_id")
+        if kwargs.get("under_components"):
+            self.under_components = []
+            for entry in kwargs.get("under_components"):
+                self.under_components.append(UnderComponent(**entry))
+        else:
+            self.under_components = None

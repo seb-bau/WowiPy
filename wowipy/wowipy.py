@@ -1740,3 +1740,213 @@ class WowiPy:
             retlist.append(ret_la)
 
         return retlist
+
+    def get_facilities(self,
+                       use_unit_id: int = None,
+                       building_id: int = None,
+                       economic_unit_id: int = None,
+                       property_id: int = None,
+                       limit: int = None,
+                       offset: int = 0,
+                       add_args: Dict = None,
+                       force_refresh: bool = True,
+                       fetch_all: bool = False,
+                       ) -> List[FacilityElement]:
+
+        filter_params = {}
+        if use_unit_id:
+            filter_params['useUnitId'] = use_unit_id
+        if building_id:
+            filter_params['buildingId'] = building_id
+        if economic_unit_id:
+            filter_params['economicUnitId'] = economic_unit_id
+        if property_id:
+            filter_params['propertyId'] = property_id
+
+        if limit is not None:
+            filter_params['limit'] = limit
+        filter_params['offset'] = offset
+
+        filter_params['showNullValues'] = 'true'
+
+        if add_args is not None:
+            filter_params.update(add_args)
+
+        retlist = []
+
+        if not fetch_all:
+            result = self._rest_adapter.get(endpoint='CommercialInventory/Facility',
+                                            ep_params=filter_params,
+                                            force_refresh=force_refresh)
+        else:
+            result = Result(0, "", [])
+            merge_schema = {"mergeStrategy": "append"}
+            merger = Merger(schema=merge_schema)
+            filter_params['offset'] = 0
+            filter_params['limit'] = 100
+            response_count = 100
+            while response_count == 100:
+                part_result = self._rest_adapter.get(endpoint='CommercialInventory/Facility',
+                                                     ep_params=filter_params,
+                                                     force_refresh=force_refresh)
+                result.data = merger.merge(result.data, part_result.data)
+                filter_params['offset'] += 100
+                response_count = len(part_result.data)
+                print(f"Facility-Count: {len(result.data)}")
+        for entry in result.data:
+            data = dict(humps.decamelize(entry))
+            ret_la = FacilityElement(**data)
+            retlist.append(ret_la)
+
+        return retlist
+
+    def get_components(self,
+                       use_unit_id: int = None,
+                       building_id: int = None,
+                       economic_unit_id: int = None,
+                       land_id: int = None,
+                       limit: int = None,
+                       offset: int = 0,
+                       add_args: Dict = None,
+                       force_refresh: bool = True,
+                       fetch_all: bool = False,
+                       ) -> List[ComponentElement]:
+
+        filter_params = {}
+        if use_unit_id:
+            filter_params['useUnitId'] = use_unit_id
+        if building_id:
+            filter_params['buildingId'] = building_id
+        if economic_unit_id:
+            filter_params['economicUnitId'] = economic_unit_id
+        if land_id:
+            filter_params['landId'] = land_id
+
+        if limit is not None:
+            filter_params['limit'] = limit
+        filter_params['offset'] = offset
+
+        filter_params['showNullValues'] = 'true'
+
+        if add_args is not None:
+            filter_params.update(add_args)
+
+        retlist = []
+
+        if not fetch_all:
+            result = self._rest_adapter.get(endpoint='CommercialInventory/Component',
+                                            ep_params=filter_params,
+                                            force_refresh=force_refresh)
+        else:
+            result = Result(0, "", [])
+            merge_schema = {"mergeStrategy": "append"}
+            merger = Merger(schema=merge_schema)
+            filter_params['offset'] = 0
+            filter_params['limit'] = 100
+            response_count = 100
+            while response_count == 100:
+                part_result = self._rest_adapter.get(endpoint='CommercialInventory/Component',
+                                                     ep_params=filter_params,
+                                                     force_refresh=force_refresh)
+                result.data = merger.merge(result.data, part_result.data)
+                filter_params['offset'] += 100
+                response_count = len(part_result.data)
+                print(f"Component-Count: {len(result.data)}")
+        for entry in result.data:
+            data = dict(humps.decamelize(entry))
+            ret_la = ComponentElement(**data)
+            retlist.append(ret_la)
+
+        return retlist
+
+    def extract_under_components(self,
+                                 components: List[ComponentElement]
+                                 ) -> Dict[int, List[UnderComponent]]:
+        _ = self
+        retval = {}
+        entry: ComponentElement
+        for entry in components:
+            if entry.under_components:
+                if entry.component_catalog_id not in retval:
+                    retval[entry.component_catalog_id] = []
+                entry2: UnderComponent
+                for entry2 in entry.under_components:
+                    if entry2 not in retval[entry.component_catalog_id]:
+                        retval[entry.component_catalog_id].append(entry2)
+        return retval
+
+    def get_facility_catalog(self,
+                             limit: int = None,
+                             offset: int = 0,
+                             add_args: Dict = None
+                             ) -> List[FacilityCatalogElement]:
+
+        filter_params = {}
+        if limit is not None:
+            filter_params['limit'] = limit
+        filter_params['offset'] = offset
+
+        filter_params['showNullValues'] = 'true'
+
+        if add_args is not None:
+            filter_params.update(add_args)
+
+        retlist = []
+        result = Result(0, "", [])
+        merge_schema = {"mergeStrategy": "append"}
+        merger = Merger(schema=merge_schema)
+        filter_params['offset'] = 0
+        filter_params['limit'] = 100
+        response_count = 100
+        while response_count == 100:
+            part_result = self._rest_adapter.get(endpoint='CommercialInventoryCatalog/FacilityCatalog',
+                                                 ep_params=filter_params,
+                                                 force_refresh=True)
+            result.data = merger.merge(result.data, part_result.data)
+            filter_params['offset'] += 100
+            response_count = len(part_result.data)
+            print(f"Facility-Catalog-Count: {len(result.data)}")
+        for entry in result.data:
+            data = dict(humps.decamelize(entry))
+            ret_la = FacilityCatalogElement(**data)
+            retlist.append(ret_la)
+
+        return retlist
+
+    def get_component_catalog(self,
+                              limit: int = None,
+                              offset: int = 0,
+                              add_args: Dict = None
+                              ) -> List[ComponentCatalogElement]:
+
+        filter_params = {}
+        if limit is not None:
+            filter_params['limit'] = limit
+        filter_params['offset'] = offset
+
+        filter_params['showNullValues'] = 'true'
+
+        if add_args is not None:
+            filter_params.update(add_args)
+
+        retlist = []
+        result = Result(0, "", [])
+        merge_schema = {"mergeStrategy": "append"}
+        merger = Merger(schema=merge_schema)
+        filter_params['offset'] = 0
+        filter_params['limit'] = 100
+        response_count = 100
+        while response_count == 100:
+            part_result = self._rest_adapter.get(endpoint='CommercialInventoryCatalog/ComponentCatalog',
+                                                 ep_params=filter_params,
+                                                 force_refresh=True)
+            result.data = merger.merge(result.data, part_result.data)
+            filter_params['offset'] += 100
+            response_count = len(part_result.data)
+            print(f"Component-Catalog-Count: {len(result.data)}")
+        for entry in result.data:
+            data = dict(humps.decamelize(entry))
+            ret_la = ComponentCatalogElement(**data)
+            retlist.append(ret_la)
+
+        return retlist

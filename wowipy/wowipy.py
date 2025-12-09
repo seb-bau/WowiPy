@@ -1950,3 +1950,169 @@ class WowiPy:
             retlist.append(ret_la)
 
         return retlist
+
+    def create_facility(self,
+                        name: str,
+                        count: int,
+                        facility_catalog_id: int,
+                        facility_status_id: int = 3,
+                        building_id: int = None,
+                        economic_unit_id: int = None,
+                        use_unit_id: int = None,
+                        property_id: int = None,
+                        inactive: bool = False):
+        data_dict = {
+            "Name": name,
+            "Count": count,
+            "FacilityCatalogId": facility_catalog_id,
+            "FacilityStatusId": facility_status_id,
+        }
+        if building_id:
+            data_dict["BuildingId"] = building_id
+        if economic_unit_id:
+            data_dict["EconomicUnitId"] = economic_unit_id
+        if use_unit_id:
+            data_dict["UseUnitId"] = use_unit_id
+        if property_id:
+            data_dict["PropertyId"] = property_id
+        if inactive is not None:
+            data_dict["Inactive"] = inactive
+        result = self._rest_adapter.post(endpoint='ManageFacilityAndComponents/Facility', data=data_dict)
+        return result
+
+    def edit_facility(self,
+                      facility_id: int,
+                      name: str,
+                      count: int,
+                      facility_catalog_id: int,
+                      facility_status_id: int = 3,
+                      building_id: int = None,
+                      economic_unit_id: int = None,
+                      use_unit_id: int = None,
+                      property_id: int = None,
+                      inactive: bool = False):
+        data_dict = {
+            "Name": name,
+            "Count": count,
+            "FacilityCatalogId": facility_catalog_id,
+            "FacilityStatusId": facility_status_id
+        }
+        if building_id:
+            data_dict["BuildingId"] = building_id
+        if economic_unit_id:
+            data_dict["EconomicUnitId"] = economic_unit_id
+        if use_unit_id:
+            data_dict["UseUnitId"] = use_unit_id
+        if property_id:
+            data_dict["PropertyId"] = property_id
+        if inactive is not None:
+            data_dict["Inactive"] = inactive
+        result = self._rest_adapter.put(endpoint=f'ManageFacilityAndComponents/Facility/{str(facility_id)}',
+                                        data=data_dict)
+        return result
+
+    def create_component(self,
+                         name: str,
+                         count: int,
+                         component_status_id: int,
+                         component_catalog_id: int,
+                         facility_id: int,
+                         repair_relevance: bool = None,
+                         lease_relevance: bool = None,
+                         comment: str = None,
+                         acquisition_date: str = None,
+                         warranty_period: str = None,
+                         warranty_end: str = None,
+                         warranty_conditions: str = None,
+                         position: str = None,
+                         valid_from: str = None,
+                         valid_to: str = None,
+                         under_component_ids: list[int] = None
+                         ):
+        data_dict = {
+            "Name": name,
+            "Count": count,
+            "ComponentStatusId": component_status_id,
+            "ComponentCatalogId": component_catalog_id,
+        }
+        if repair_relevance is not None:
+            data_dict["RepairRelevance"] = repair_relevance
+        if lease_relevance is not None:
+            data_dict["LeaseRelevance"] = lease_relevance
+        if comment:
+            data_dict["Comment"] = comment
+        if acquisition_date is not None:
+            data_dict["AcquisitionDate"] = acquisition_date
+        if warranty_period is not None:
+            data_dict["WarrantyPeriod"] = warranty_period
+        if warranty_end is not None:
+            data_dict["WarrantyEnd"] = warranty_end
+        if warranty_conditions is not None:
+            data_dict["WarrantyConditions"] = warranty_conditions
+        if position is not None:
+            data_dict["Position"] = position
+        if valid_from:
+            data_dict["ValidFrom"] = valid_from
+        else:
+            data_dict["ValidFrom"] = datetime.now().strftime("%Y-%m-%d")
+        if valid_to:
+            data_dict["ValidTo"] = valid_to
+        if under_component_ids is not None and len(under_component_ids) > 0:
+            data_dict["UnderComponentIds"] = under_component_ids
+        result = self._rest_adapter.post(endpoint=f'ManageFacilityAndComponents/Facility/{str(facility_id)}/Component',
+                                         data=data_dict)
+        return result
+
+    def edit_component(self,
+                       component_id: int,
+                       name: str,
+                       count: int,
+                       component_status_id: int,
+                       component_catalog_id: int,
+                       facility_id: int,
+                       repair_relevance: bool = None,
+                       lease_relevance: bool = None,
+                       comment: str = None,
+                       acquisition_date: str = None,
+                       warranty_period: str = None,
+                       warranty_end: str = None,
+                       warranty_conditions: str = None,
+                       position: str = None,
+                       valid_from: str = None,
+                       valid_to: str = None,
+                       under_component_ids: list[int] = None
+                       ):
+        data_dict = {
+            "Name": name,
+            "Count": count,
+            "ComponentStatusId": component_status_id,
+            "ComponentCatalogId": component_catalog_id,
+        }
+        if repair_relevance is not None:
+            data_dict["RepairRelevance"] = repair_relevance
+        if lease_relevance is not None:
+            data_dict["LeaseRelevance"] = lease_relevance
+        if comment:
+            data_dict["Comment"] = comment
+        if acquisition_date is not None:
+            data_dict["AcquisitionDate"] = acquisition_date
+        if warranty_period is not None:
+            data_dict["WarrantyPeriod"] = warranty_period
+        if warranty_end is not None:
+            data_dict["WarrantyEnd"] = warranty_end
+        if warranty_conditions is not None:
+            data_dict["WarrantyConditions"] = warranty_conditions
+        if position is not None:
+            data_dict["Position"] = position
+        if valid_from:
+            data_dict["ValidFrom"] = valid_from
+        else:
+            data_dict["ValidFrom"] = datetime.now().strftime("%Y-%m-%d")
+        if valid_to:
+            data_dict["ValidTo"] = valid_to
+        if under_component_ids is not None and len(under_component_ids) > 0:
+            data_dict["UnderComponentIds"] = under_component_ids
+        result = self._rest_adapter.put(
+            endpoint=f'ManageFacilityAndComponents/Facility/{str(facility_id)}/Component/{str(component_id)}',
+            data=data_dict)
+        return result

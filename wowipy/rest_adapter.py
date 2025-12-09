@@ -42,13 +42,19 @@ class RestAdapter:
         self.password = password
         self.api_key = api_key
         if len(hostname) > 0:
-            self.token = self._create_token()
+            self.access_token, self.refresh_token = self._create_token()
 
-    def _create_token(self):
+    def _create_token(self, refresh_token: str = None):
         full_url = f"https://{self.host_base}/oauth2/token"
-        payload = f"grant_type=password&" \
-                  f"username={self.user}&" \
-                  f"password={self.password}"
+        if not refresh_token:
+            print(f"_create_token: Logging in")
+            payload = f"grant_type=password&" \
+                      f"username={self.user}&" \
+                      f"password={self.password}"
+        else:
+            print(f"_create_token: Refreshing token")
+            payload = f"grant_type=refresh_token&" \
+                      f"refresh_token={refresh_token}"
         headers = {
             'User-Agent': self.user_agent,
             'Accept': 'text/plain',
@@ -62,13 +68,16 @@ class RestAdapter:
             raise ConnectionError(errmsg)
 
         response_json = response.json()
-        return response_json["access_token"]
+        return response_json["access_token"], response_json["refresh_token"]
 
     def get(self, endpoint: str, ep_params: Dict = None, force_refresh: bool = False) -> Result:
         return self._do(http_method='GET', endpoint=endpoint, ep_params=ep_params, force_refresh=force_refresh)
 
     def post(self, endpoint: str, ep_params: Dict = None, data: Dict = None) -> Result:
         return self._do(http_method='POST', endpoint=endpoint, ep_params=ep_params, data=data)
+
+    def put(self, endpoint: str, ep_params: Dict = None, data: Dict = None) -> Result:
+        return self._do(http_method='PUT', endpoint=endpoint, ep_params=ep_params, data=data)
 
     def delete(self, endpoint: str, ep_params: Dict = None, data: Dict = None) -> Result:
         return self._do(http_method='DELETE', endpoint=endpoint, ep_params=ep_params, data=data)
@@ -90,7 +99,7 @@ class RestAdapter:
         headers = {
             'User-Agent': self.user_agent,
             'Accept': 'text/plain',
-            'Authorization': f'Bearer {self.token}'
+            'Authorization': f'Bearer {self.access_token}'
         }
         log_line_pre = f"method={http_method}, url={full_url}"
         log_line_post = ', '.join((log_line_pre, "success={}, status_code={}, message={}, text={}"))
@@ -112,8 +121,8 @@ class RestAdapter:
             if 200 <= response.status_code < 300:
                 break
             elif response.status_code == 401:
-                self.token = self._create_token()
-                headers['Authorization'] = f'Bearer {self.token}'
+                self.acces_token, self.refresh_token = self._create_token(refresh_token=self.refresh_token)
+                headers['Authorization'] = f'Bearer {self.access_token}'
                 continue
 
         try:

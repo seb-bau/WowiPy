@@ -1806,6 +1806,7 @@ class WowiPy:
                        economic_unit_id: int = None,
                        land_id: int = None,
                        limit: int = None,
+                       facility_id: int = None,
                        offset: int = 0,
                        add_args: Dict = None,
                        force_refresh: bool = True,
@@ -1821,6 +1822,8 @@ class WowiPy:
             filter_params['economicUnitId'] = economic_unit_id
         if land_id:
             filter_params['landId'] = land_id
+        if facility_id:
+            filter_params['facilityId'] = facility_id
 
         if limit is not None:
             filter_params['limit'] = limit

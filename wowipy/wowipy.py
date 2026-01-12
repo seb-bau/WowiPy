@@ -1807,6 +1807,7 @@ class WowiPy:
                        land_id: int = None,
                        limit: int = None,
                        facility_id: int = None,
+                       component_id: int = None,
                        offset: int = 0,
                        add_args: Dict = None,
                        force_refresh: bool = True,
@@ -1824,6 +1825,8 @@ class WowiPy:
             filter_params['landId'] = land_id
         if facility_id:
             filter_params['facilityId'] = facility_id
+        if component_id:
+            filter_params['componentId'] = component_id
 
         if limit is not None:
             filter_params['limit'] = limit

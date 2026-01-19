@@ -2122,3 +2122,10 @@ class WowiPy:
             endpoint=f'ManageFacilityAndComponents/Facility/{str(facility_id)}/Component/{str(component_id)}',
             data=data_dict)
         return result
+
+    def delete_component(self, facility_id: int, component_id: int):
+        data_dict = {}
+        result = self._rest_adapter.delete(
+            endpoint=f'ManageFacilityAndComponents/Facility/{str(facility_id)}/Component/{str(component_id)}',
+            data=data_dict)
+        return result

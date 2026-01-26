@@ -283,6 +283,14 @@ class FileEntity(IdNameCombination):
     pass
 
 
+class MediaEntity(IdNameCombination):
+    pass
+
+
+class PictureType(IdNameCombination):
+    pass
+
+
 class FileData:
     id_: int
     file_guid: str
@@ -324,6 +332,52 @@ class FileData:
         self.data_privacy_category_id = data_privacy_category_id
         self.data_privacy_category_name = data_privacy_category_name
         self.entity_type_name = entity_type_name
+
+
+class MediaData:
+    id_: int
+    file_guid: str
+    file_name: str
+    entity_name: str
+    creation_date: str
+    entity_id: int
+    entity_idnum: str
+    entity_type_name: str
+    picture_type_id: int
+    picture_type_name: str
+    marketing_release: bool
+    is_for_license_agreements: bool
+    remark: str
+
+    def __init__(self, file_name: str,
+                 creation_date_str: str,
+                 entity_type_name: str,
+                 id_: int = None,
+                 file_guid: str = None,
+                 entity_name: str = None,
+                 entity_id: int = None,
+                 entity_idnum: str = None,
+                 picture_type_id: int = None,
+                 picture_type_name: str = None,
+                 marketing_release: bool = False,
+                 is_for_license_agreements: bool = False,
+                 remark: str = None,
+                 **kwargs):
+        if kwargs:
+            pass
+        self.id_ = id_
+        self.file_guid = file_guid
+        self.file_name = file_name
+        self.entity_name = entity_name
+        self.creation_date = creation_date_str
+        self.entity_id = entity_id
+        self.entity_idnum = entity_idnum
+        self.picture_type_id = picture_type_id
+        self.picture_type_name = picture_type_name
+        self.entity_type_name = entity_type_name
+        self.marketing_release = marketing_release
+        self.is_for_license_agreements = is_for_license_agreements
+        self.remark = remark
 
 
 class ContractPositionType:

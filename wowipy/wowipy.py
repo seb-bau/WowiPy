@@ -1601,6 +1601,17 @@ class WowiPy:
 
         return retlist
 
+    def get_picture_type_catalog(self):
+        retlist = []
+        result = self._rest_adapter.get(endpoint='MediaReadCatalog/EstatePictureType')
+        for entry in result.data:
+            data = dict(humps.decamelize(entry))
+            data['id_'] = data.pop('id')
+            ret_la = PictureType(**data)
+            retlist.append(ret_la)
+
+        return retlist
+
     def get_file_entity_catalog(self):
         retlist = []
         result = self._rest_adapter.get(endpoint='DocumentReadCatalog/FileEntity')
@@ -1609,6 +1620,18 @@ class WowiPy:
             data = dict(humps.decamelize(entry))
             data['id_'] = data.pop('id')
             ret_la = FileEntity(**data)
+            retlist.append(ret_la)
+
+        return retlist
+
+    def get_media_entity_catalog(self):
+        retlist = []
+        result = self._rest_adapter.get(endpoint='MediaReadCatalog/MediaEntity')
+
+        for entry in result.data:
+            data = dict(humps.decamelize(entry))
+            data['id_'] = data.pop('id')
+            ret_la = MediaEntity(**data)
             retlist.append(ret_la)
 
         return retlist
@@ -1627,11 +1650,32 @@ class WowiPy:
                 return entity_cat.name
         return ""
 
+    def get_media_entity_id_from_name(self, media_entity_name: str) -> int:
+        media_entity_cat = self.get_media_entity_catalog()
+        for med_cat in media_entity_cat:
+            if med_cat.name.lower() == media_entity_name:
+                return med_cat.id_
+        return 0
+
+    def get_media_entity_name_from_id(self, media_entity_id: int) -> str:
+        media_entity_cat = self.get_media_entity_catalog()
+        for med_cat in media_entity_cat:
+            if med_cat.id_ == media_entity_id:
+                return med_cat.name
+        return ""
+
     def get_file_type_id_from_name(self, file_type_name: str) -> int:
         file_type_cat = self.get_file_type_catalog()
         for type_cat in file_type_cat:
             if type_cat.name.lower() == file_type_name.lower():
                 return type_cat.id_
+        return 0
+
+    def get_picture_type_id_from_name(self, picture_type_name: str) -> int:
+        picture_type_cat = self.get_picture_type_catalog()
+        for pic_cat in picture_type_cat:
+            if pic_cat.name.lower() == picture_type_name.lower():
+                return pic_cat.id_
         return 0
 
     def upload_file(self, file_data: FileData, file_path: str) -> Result:
@@ -2128,4 +2172,50 @@ class WowiPy:
         result = self._rest_adapter.delete(
             endpoint=f'ManageFacilityAndComponents/Facility/{str(facility_id)}/Component/{str(component_id)}',
             data=data_dict)
+        return result
+
+    def upload_media(self, media_data: MediaData, file_path: str) -> Result:
+        if not media_data.picture_type_id:
+            if not media_data.picture_type_name:
+                return Result(status_code=400, message="Need either picture_type_id or picture_type_name for upload")
+            t_pic_id = self.get_picture_type_id_from_name(media_data.picture_type_name)
+            if not t_pic_id:
+                return Result(status_code=400, message=f"Unknown picture_type_name '{media_data.picture_type_name}'")
+            media_data.picture_type_id = t_pic_id
+
+        if not media_data.entity_id:
+            if not media_data.entity_name:
+                return Result(status_code=400, message="Need either entity_id or entity_name for upload")
+            t_entity_id = self.get_media_entity_id_from_name(media_data.entity_name)
+            if not t_entity_id:
+                return Result(status_code=400, message=f"Unknown entity_name '{media_data.entity_name}'")
+            media_data.entity_id = t_entity_id
+
+        if not media_data.entity_name:
+            media_data.entity_name = self.get_media_entity_name_from_id(media_data.entity_id)
+
+        if not media_data.is_for_license_agreements:
+            media_data.is_for_license_agreements = False
+        if not media_data.marketing_release:
+            media_data.marketing_release = False
+
+        if not os.path.exists(file_path):
+            return Result(status_code=400, message=f"File '{file_path}' does not exist.")
+
+        tcontent = file_to_base64(file_path)
+        tchecksum = sha1sum(file_path)
+
+        data_dict = {
+            "Filename": media_data.file_name,
+            "CreationDate": media_data.creation_date,
+            "EstatePictureTypeId": media_data.picture_type_id,
+            "EntityId": media_data.entity_id,
+            "MarketingRelease": media_data.marketing_release,
+            "IsForLicenseAgreements": media_data.is_for_license_agreements,
+            "Remark": media_data.remark,
+            "Contents": tcontent,
+            "Sha1Hash": tchecksum
+        }
+
+        result = self._rest_adapter.post(endpoint=f'MediaEdit/{media_data.entity_type_name}/Media', data=data_dict)
         return result

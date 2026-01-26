@@ -343,8 +343,8 @@ class MediaData:
     entity_id: int
     entity_idnum: str
     entity_type_name: str
-    picture_type_id: int
-    picture_type_name: str
+    picture_type_id: Optional[int]
+    picture_type_name: Optional[str]
     marketing_release: bool
     is_for_license_agreements: bool
     remark: str
@@ -357,8 +357,6 @@ class MediaData:
                  entity_name: str = None,
                  entity_id: int = None,
                  entity_idnum: str = None,
-                 picture_type_id: int = None,
-                 picture_type_name: str = None,
                  marketing_release: bool = False,
                  is_for_license_agreements: bool = False,
                  remark: str = None,
@@ -372,8 +370,13 @@ class MediaData:
         self.creation_date = creation_date_str
         self.entity_id = entity_id
         self.entity_idnum = entity_idnum
-        self.picture_type_id = picture_type_id
-        self.picture_type_name = picture_type_name
+        estate_picture_type = kwargs.get("estate_picture_type")
+        if estate_picture_type:
+            self.picture_type_id = kwargs["estate_picture_type"]["id"]
+            self.picture_type_name = kwargs["estate_picture_type"]["name"]
+        else:
+            self.picture_type_id = None
+            self.picture_type_name = None
         self.entity_type_name = entity_type_name
         self.marketing_release = marketing_release
         self.is_for_license_agreements = is_for_license_agreements

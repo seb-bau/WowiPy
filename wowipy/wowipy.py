@@ -2219,3 +2219,78 @@ class WowiPy:
 
         result = self._rest_adapter.post(endpoint=f'MediaEdit/{media_data.entity_type_name}/Media', data=data_dict)
         return result
+
+    def get_media(self, entity_name: str, entity_id: int = None, file_guid: str = None,
+                  file_id: int = None,
+                  media_id: int = None,
+                  limit: int = None,
+                  offset: int = 0,
+                  add_args: Dict = None,
+                  fetch_all: bool = True
+                  ) -> list[MediaData]:
+        filter_params = {}
+        if entity_id:
+            filter_params['entityId'] = entity_id
+        if file_guid:
+            filter_params['fileGuid'] = file_guid
+        if file_id:
+            filter_params['fileId'] = file_id
+        if media_id:
+            filter_params['mediaId'] = media_id
+
+        if limit is not None:
+            filter_params['limit'] = limit
+        filter_params['offset'] = offset
+
+        filter_params['showNullValues'] = 'true'
+
+        if add_args is not None:
+            filter_params.update(add_args)
+
+        retlist = []
+
+        if not fetch_all:
+            result = self._rest_adapter.get(endpoint=f'MediaRead/{entity_name}/MediaData',
+                                            ep_params=filter_params,
+                                            force_refresh=True)
+        else:
+            result = Result(0, "", [])
+            merge_schema = {"mergeStrategy": "append"}
+            merger = Merger(schema=merge_schema)
+            filter_params['offset'] = 0
+            filter_params['limit'] = 100
+            response_count = 100
+            while response_count == 100:
+                part_result = self._rest_adapter.get(endpoint=f'MediaRead/{entity_name}/MediaData',
+                                                     ep_params=filter_params,
+                                                     force_refresh=True)
+                result.data = merger.merge(result.data, part_result.data)
+                filter_params['offset'] += 100
+                response_count = len(part_result.data)
+                print(f"Media-Count: {len(result.data)}")
+        for entry in result.data:
+            data = dict(humps.decamelize(entry))
+            file_name = data['file']['file_name']
+            entity_type_name = data['entity_name']
+            creation_date_str = data['file']['creation_date']
+            file_guid = data['file']['file_guid']
+            ret_la = MediaData(**data, file_name=file_name, entity_type_name=entity_type_name,
+                               creation_date_str=creation_date_str, file_guid=file_guid)
+            retlist.append(ret_la)
+
+        return retlist
+
+    def download_media(self, entity_name: str, file_guid: str, dest_file_path: str, dest_file_name: str = None):
+        if not entity_name or not file_guid or not dest_file_path:
+            return Result(status_code=400, message="Need entity_name, file_guid and dest_file_path")
+
+        if not dest_file_name:
+            the_media = self.get_media(file_guid=file_guid, entity_name=entity_name)[0]
+            dest_file_name = the_media.file_name
+
+        full_path = os.path.join(dest_file_path, dest_file_name)
+        result = self._rest_adapter.get(endpoint=f'MediaRead/{entity_name}/MediaContent/{file_guid}')
+        binary_data = base64.b64decode(result.data)
+        with open(full_path, "wb") as f:
+            f.write(binary_data)
+        return True

@@ -64,7 +64,6 @@ class RestAdapter:
 
         if response.status_code != 200:
             errmsg = f"OPEN WOWI Auth Error. Status {response.status_code}:{response.text}"
-            self.logger.error(errmsg)
             raise ConnectionError(errmsg)
 
         response_json = response.json()
@@ -115,7 +114,6 @@ class RestAdapter:
                     response = requests.request(method=http_method, url=full_url, headers=headers, params=ep_params,
                                                 json=data)
             except requests.exceptions.RequestException as e:
-                self._logger.error(msg=(str(e)))
                 raise WowiPyException("Request failed") from e
 
             if 200 <= response.status_code < 300:
@@ -128,7 +126,6 @@ class RestAdapter:
         try:
             data_out = response.json()
         except (ValueError, JSONDecodeError) as e:
-            self._logger.error(msg=log_line_post.format(False, None, f"{e} Response: {response.text}"))
             raise WowiPyException("Bad JSON in response") from e
 
         is_success = 200 <= response.status_code <= 299
@@ -136,5 +133,4 @@ class RestAdapter:
         if is_success:
             self._logger.debug(msg=log_line)
             return Result(response.status_code, message=response.reason, data=data_out)
-        self._logger.error(msg=log_line)
         raise WowiPyException(f"{response.status_code}: {response.reason} -> {response.text}")

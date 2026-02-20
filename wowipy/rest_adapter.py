@@ -69,7 +69,7 @@ class RestAdapter:
         response_json = response.json()
         return response_json["access_token"], response_json["refresh_token"]
 
-    def get(self, endpoint: str, ep_params: Dict = None, force_refresh: bool = False) -> Result:
+    def get(self, endpoint: str, ep_params: Dict = None, force_refresh: bool = True) -> Result:
         return self._do(http_method='GET', endpoint=endpoint, ep_params=ep_params, force_refresh=force_refresh)
 
     def post(self, endpoint: str, ep_params: Dict = None, data: Dict = None) -> Result:
@@ -82,7 +82,7 @@ class RestAdapter:
         return self._do(http_method='DELETE', endpoint=endpoint, ep_params=ep_params, data=data)
 
     def _do(self, http_method: str, endpoint: str, ep_params: Dict = None, data: Dict = None,
-            force_refresh: bool = True) -> Result:
+            force_refresh: bool = False) -> Result:
         if ep_params is None:
             ep_params = {}
 

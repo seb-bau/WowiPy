@@ -82,7 +82,7 @@ class RestAdapter:
         return self._do(http_method='DELETE', endpoint=endpoint, ep_params=ep_params, data=data)
 
     def _do(self, http_method: str, endpoint: str, ep_params: Dict = None, data: Dict = None,
-            force_refresh: bool = False) -> Result:
+            force_refresh: bool = True) -> Result:
         if ep_params is None:
             ep_params = {}
 

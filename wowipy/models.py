@@ -2869,6 +2869,20 @@ class ComponentCatalogElement:
         return f"Component Catalog Element {self.name} ({self.id_})"
 
 
+class UnderComponentCatalogElement:
+    id_: int
+    name: str
+    node_id: int
+
+    def __init__(self, **kwargs):
+        self.id_ = kwargs.get("id")
+        self.name = kwargs.get("name")
+        self.node = kwargs.get("node_id")
+
+    def __repr__(self):
+        return f"Under Component Catalog Element {self.name} ({self.id_})"
+
+
 class FacilityElement:
     id_: int
     name: str

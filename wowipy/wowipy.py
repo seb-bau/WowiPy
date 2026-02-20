@@ -1909,22 +1909,6 @@ class WowiPy:
 
         return retlist
 
-    def extract_under_components(self,
-                                 components: List[ComponentElement]
-                                 ) -> Dict[int, List[UnderComponent]]:
-        _ = self
-        retval = {}
-        entry: ComponentElement
-        for entry in components:
-            if entry.under_components:
-                if entry.component_catalog_id not in retval:
-                    retval[entry.component_catalog_id] = []
-                entry2: UnderComponent
-                for entry2 in entry.under_components:
-                    if entry2 not in retval[entry.component_catalog_id]:
-                        retval[entry.component_catalog_id].append(entry2)
-        return retval
-
     def get_facility_catalog(self,
                              limit: int = None,
                              offset: int = 0,
@@ -1997,6 +1981,44 @@ class WowiPy:
         for entry in result.data:
             data = dict(humps.decamelize(entry))
             ret_la = ComponentCatalogElement(**data)
+            retlist.append(ret_la)
+
+        return retlist
+
+    def get_under_component_catalog(self,
+                                    limit: int = None,
+                                    offset: int = 0,
+                                    add_args: Dict = None
+                                    ) -> List[UnderComponentCatalogElement]:
+
+        filter_params = {}
+        if limit is not None:
+            filter_params['limit'] = limit
+        filter_params['offset'] = offset
+
+        filter_params['showNullValues'] = 'true'
+
+        if add_args is not None:
+            filter_params.update(add_args)
+
+        retlist = []
+        result = Result(0, "", [])
+        merge_schema = {"mergeStrategy": "append"}
+        merger = Merger(schema=merge_schema)
+        filter_params['offset'] = 0
+        filter_params['limit'] = 100
+        response_count = 100
+        while response_count == 100:
+            part_result = self._rest_adapter.get(endpoint='CommercialInventoryCatalog/UnderComponent',
+                                                 ep_params=filter_params,
+                                                 force_refresh=True)
+            result.data = merger.merge(result.data, part_result.data)
+            filter_params['offset'] += 100
+            response_count = len(part_result.data)
+            print(f"Under-Component-Catalog-Count: {len(result.data)}")
+        for entry in result.data:
+            data = dict(humps.decamelize(entry))
+            ret_la = UnderComponentCatalogElement(**data)
             retlist.append(ret_la)
 
         return retlist

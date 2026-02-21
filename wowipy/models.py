@@ -2972,3 +2972,17 @@ class ComponentElement:
                 self.under_components.append(UnderComponent(**entry))
         else:
             self.under_components = None
+
+
+class EstatePictureType:
+    id_: int
+    name: str
+    code: str
+
+    def __init__(self, **kwargs):
+        self.id_ = kwargs.get("id")
+        self.name = kwargs.get("name")
+        self.code = kwargs.get("code")
+
+    def __repr__(self):
+        return f"EstatePictureType {self.name} ({self.id_})"

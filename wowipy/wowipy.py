@@ -2023,6 +2023,38 @@ class WowiPy:
 
         return retlist
 
+    def get_estate_picture_types(self, add_args: Dict = None) -> List[EstatePictureType]:
+        filter_params = {}
+        if add_args is not None:
+            filter_params.update(add_args)
+
+        retlist = []
+        result = self._rest_adapter.get(endpoint='MediaReadCatalog/EstatePictureType',
+                                        ep_params=filter_params,
+                                        force_refresh=True)
+        print(f"EstatePictureType-Count: {len(result.data)}")
+        for entry in result.data:
+            data = dict(humps.decamelize(entry))
+            ret_la = EstatePictureType(**data)
+            retlist.append(ret_la)
+        return retlist
+
+    def get_media_entities(self, add_args: Dict = None) -> List[MediaEntity]:
+        filter_params = {}
+        if add_args is not None:
+            filter_params.update(add_args)
+
+        retlist = []
+        result = self._rest_adapter.get(endpoint='MediaReadCatalog/MediaEntity',
+                                        ep_params=filter_params,
+                                        force_refresh=True)
+        print(f"MediaEntity-Count: {len(result.data)}")
+        for entry in result.data:
+            data = dict(humps.decamelize(entry))
+            ret_la = MediaEntity(**data)
+            retlist.append(ret_la)
+        return retlist
+
     def create_facility(self,
                         name: str,
                         count: int,

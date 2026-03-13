@@ -2348,3 +2348,59 @@ class WowiPy:
         with open(full_path, "wb") as f:
             f.write(binary_data)
         return True
+
+    def create_communication(self,
+                             person_id: int,
+                             communication_type_id: int = None,
+                             related_address_id: int = None,
+                             content: str = None,
+                             explanation: str = None,
+                             ):
+        data_dict = {
+        }
+        if communication_type_id is not None:
+            data_dict["CommunicationTypeId"] = communication_type_id
+        if related_address_id is not None:
+            data_dict["RelatedAddressId"] = related_address_id
+        if content is not None:
+            data_dict["Content"] = content
+        if explanation is not None:
+            data_dict["Explanation"] = explanation
+
+        result = self._rest_adapter.post(
+            endpoint=f'PersonsWrite/Person/{str(person_id)}/Communications',
+            data=data_dict)
+        return result
+
+    def edit_communication(self,
+                           person_id: int,
+                           communication_id: int,
+                           communication_type_id: int = None,
+                           related_address_id: int = None,
+                           content: str = None,
+                           explanation: str = None,
+                           ):
+        data_dict = {
+        }
+        if communication_type_id is not None:
+            data_dict["CommunicationTypeId"] = communication_type_id
+        if related_address_id is not None:
+            data_dict["RelatedAddressId"] = related_address_id
+        if content is not None:
+            data_dict["Content"] = content
+        if explanation is not None:
+            data_dict["Explanation"] = explanation
+
+        print(data_dict)
+
+        result = self._rest_adapter.put(
+            endpoint=f'PersonsWrite/Person/{str(person_id)}/Communications/{str(communication_id)}',
+            data=data_dict)
+        return result
+
+    def delete_communication(self, person_id: int, communication_id: int):
+        data_dict = {}
+        result = self._rest_adapter.delete(
+            endpoint=f'PersonsWrite/Person/{str(person_id)}/Communications/{str(communication_id)}',
+            data=data_dict)
+        return result

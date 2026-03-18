@@ -909,11 +909,14 @@ class WowiPy:
                       offset: int = 0,
                       add_args: Dict = None,
                       fetch_all: bool = False,
-                      use_cache: bool = False) -> List[UseUnit]:
+                      use_cache: bool = False,
+                      use_unit_id: int = None) -> List[UseUnit]:
 
         filter_params = {}
         if use_unit_idnum is not None:
             filter_params['useUnitNumber'] = use_unit_idnum
+        if use_unit_id is not None:
+            filter_params['useUnitId'] = use_unit_idnum
         if building_land_idnum is not None:
             filter_params['buildingLandIdNum'] = building_land_idnum
         if economic_unit_idnum is not None:
@@ -2334,7 +2337,8 @@ class WowiPy:
 
         return retlist
 
-    def download_media(self, entity_name: str, file_guid: str, dest_file_path: str, dest_file_name: str = None):
+    def download_media(self, entity_name: str, file_guid: str, dest_file_path: str, dest_file_name: str = None,
+                       is_thumbnail: bool = False):
         if not entity_name or not file_guid or not dest_file_path:
             return Result(status_code=400, message="Need entity_name, file_guid and dest_file_path")
 
@@ -2343,7 +2347,11 @@ class WowiPy:
             dest_file_name = the_media.file_name
 
         full_path = os.path.join(dest_file_path, dest_file_name)
-        result = self._rest_adapter.get(endpoint=f'MediaRead/{entity_name}/MediaContent/{file_guid}')
+        if is_thumbnail:
+            med_endpoint = "MediaThumbnailContent"
+        else:
+            med_endpoint = "MediaContent"
+        result = self._rest_adapter.get(endpoint=f'MediaRead/{entity_name}/{med_endpoint}/{file_guid}')
         binary_data = base64.b64decode(result.data)
         with open(full_path, "wb") as f:
             f.write(binary_data)

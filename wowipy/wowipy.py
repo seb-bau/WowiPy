@@ -2331,8 +2331,12 @@ class WowiPy:
             entity_type_name = data['entity_name']
             creation_date_str = data['file']['creation_date']
             file_guid = data['file']['file_guid']
+            thumb_guid = data['thumbnail']['file_guid']
+            thumb_name = data['thumbnail']['file_name']
+            data["id_"] = data.pop("id")
             ret_la = MediaData(**data, file_name=file_name, entity_type_name=entity_type_name,
-                               creation_date_str=creation_date_str, file_guid=file_guid)
+                               creation_date_str=creation_date_str, file_guid=file_guid,
+                               thumb_guid=thumb_guid, thumb_name=thumb_name)
             retlist.append(ret_la)
 
         return retlist
@@ -2398,8 +2402,6 @@ class WowiPy:
             data_dict["Content"] = content
         if explanation is not None:
             data_dict["Explanation"] = explanation
-
-        print(data_dict)
 
         result = self._rest_adapter.put(
             endpoint=f'PersonsWrite/Person/{str(person_id)}/Communications/{str(communication_id)}',

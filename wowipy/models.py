@@ -348,6 +348,8 @@ class MediaData:
     marketing_release: bool
     is_for_license_agreements: bool
     remark: str
+    thumb_guid: str
+    thumb_name: str
 
     def __init__(self, file_name: str,
                  creation_date_str: str,
@@ -360,6 +362,8 @@ class MediaData:
                  marketing_release: bool = False,
                  is_for_license_agreements: bool = False,
                  remark: str = None,
+                 thumb_guid: str = None,
+                 thumb_name: str = None,
                  **kwargs):
         if kwargs:
             pass
@@ -381,6 +385,8 @@ class MediaData:
         self.marketing_release = marketing_release
         self.is_for_license_agreements = is_for_license_agreements
         self.remark = remark
+        self.thumb_name = thumb_name
+        self.thumb_guid = thumb_guid
 
 
 class ContractPositionType:
@@ -2835,6 +2841,20 @@ class FacilityCatalogElement:
         return f"Facility Type {self.name} ({self.id_})"
 
 
+class UnderComponentCatalogElement:
+    id_: int
+    name: str
+    node_id: int
+
+    def __init__(self, **kwargs):
+        self.id_ = kwargs.get("id")
+        self.name = kwargs.get("name")
+        self.node = kwargs.get("node_id")
+
+    def __repr__(self):
+        return f"Under Component Catalog Element {self.name} ({self.id_})"
+
+
 class ComponentCatalogElement:
     id_: int
     name: str
@@ -2849,6 +2869,7 @@ class ComponentCatalogElement:
     quantity_type_name: str
     quantity_type_code: str
     is_metering_device: bool
+    allowed_under_components: Optional[List[UnderComponentCatalogElement]]
 
     def __init__(self, **kwargs):
         self.id_ = kwargs.get("id")
@@ -2864,23 +2885,15 @@ class ComponentCatalogElement:
         self.quantity_type_name = kwargs.get("quantity_type").get("name")
         self.quantity_type_code = kwargs.get("quantity_type").get("code")
         self.is_metering_device = kwargs.get("is_metering_device")
+        if kwargs.get("allowed_under_components"):
+            self.allowed_under_components = []
+            for entry in kwargs.get("allowed_under_components"):
+                self.allowed_under_components.append(UnderComponentCatalogElement(**entry))
+        else:
+            self.allowed_under_components = None
 
     def __repr__(self):
         return f"Component Catalog Element {self.name} ({self.id_})"
-
-
-class UnderComponentCatalogElement:
-    id_: int
-    name: str
-    node_id: int
-
-    def __init__(self, **kwargs):
-        self.id_ = kwargs.get("id")
-        self.name = kwargs.get("name")
-        self.node = kwargs.get("node_id")
-
-    def __repr__(self):
-        return f"Under Component Catalog Element {self.name} ({self.id_})"
 
 
 class FacilityElement:

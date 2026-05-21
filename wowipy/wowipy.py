@@ -746,9 +746,14 @@ class WowiPy:
 
     def get_building_lands(self,
                            management_idnum: str = None,
+                           management_id: int = None,
                            owner_number: str = None,
+                           owner_id: int = None,
                            economic_unit_idnum: str = None,
+                           economic_unit_id: int = None,
                            building_land_idnum: str = None,
+                           building_land_id: int = None,
+                           building_land_type: str = None,
                            limit: int = None,
                            offset: int = 0,
                            add_args: Dict = None,
@@ -758,12 +763,22 @@ class WowiPy:
         filter_params = {}
         if management_idnum is not None:
             filter_params['managementIdNum'] = management_idnum
+        if management_id is not None:
+            filter_params['managementId'] = management_id
         if owner_number is not None:
             filter_params['ownerNumber'] = owner_number
+        if owner_id is not None:
+            filter_params['ownerId'] = owner_number
         if economic_unit_idnum is not None:
-            filter_params['economicIdNum'] = economic_unit_idnum
+            filter_params['economicUnitIdNum'] = economic_unit_idnum
+        if economic_unit_id is not None:
+            filter_params['economicUnitId'] = economic_unit_id
         if building_land_idnum is not None:
             filter_params['buildingLandIdNum'] = building_land_idnum
+        if building_land_id is not None:
+            filter_params['buildingLandId'] = building_land_id
+        if building_land_type is not None:
+            filter_params['buildingLandType'] = building_land_type
         if limit is not None:
             filter_params['limit'] = limit
         filter_params['offset'] = offset
@@ -2412,5 +2427,12 @@ class WowiPy:
         data_dict = {}
         result = self._rest_adapter.delete(
             endpoint=f'PersonsWrite/Person/{str(person_id)}/Communications/{str(communication_id)}',
+            data=data_dict)
+        return result
+
+    def delete_ticket(self, ticket_id: int):
+        data_dict = {}
+        result = self._rest_adapter.delete(
+            endpoint=f'CommunicationEdit/Ticket/{ticket_id}',
             data=data_dict)
         return result

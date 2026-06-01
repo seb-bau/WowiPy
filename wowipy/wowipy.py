@@ -931,7 +931,7 @@ class WowiPy:
         if use_unit_idnum is not None:
             filter_params['useUnitNumber'] = use_unit_idnum
         if use_unit_id is not None:
-            filter_params['useUnitId'] = use_unit_idnum
+            filter_params['useUnitId'] = use_unit_id
         if building_land_idnum is not None:
             filter_params['buildingLandIdNum'] = building_land_idnum
         if economic_unit_idnum is not None:

@@ -720,8 +720,8 @@ class CommissionItem:
     quantity_type: Optional[QuantityType]
     component: Optional[Component]
     facility: Optional[Facility]
-    approved_net_amount: int
-    commission: Commission
+    approved_net_amount: Optional[int]
+    commission: Optional[Commission]
 
     def __init__(self, id_: int,
                  code: str,
@@ -739,8 +739,6 @@ class CommissionItem:
                  quantity_type: Dict,
                  component: Dict,
                  facility: Dict,
-                 approved_net_amount: int,
-                 commission: Dict,
                  is_canceled: bool,
                  **kwargs) -> None:
         if kwargs:
@@ -781,9 +779,11 @@ class CommissionItem:
             self.facility = Facility(**facility)
         else:
             self.facility = None
-        self.approved_net_amount = approved_net_amount
-        commission["id_"] = commission.pop("id")
-        self.commission = Commission(**commission)
+        self.approved_net_amount = kwargs.get("approved_net_amount")
+        if kwargs.get("commission"):
+            commission = kwargs.get("commission")
+            commission["id_"] = commission.pop("id")
+            self.commission = Commission(**commission)
 
 
 class PaymentOrderElement:
@@ -1228,10 +1228,10 @@ class OwnerShort:
 class EconomicUnitShort:
     id_: int
     id_num: str
-    name: str
-    location: str
+    name: Optional[str]
+    location: Optional[str]
 
-    def __init__(self, id_: int, id_num: str, name: str, location: str = None, **kwargs) -> None:
+    def __init__(self, id_: int, id_num: str, name: str = None, location: str = None, **kwargs) -> None:
         self.id_ = id_
         self.id_num = id_num
         self.name = name
@@ -2999,3 +2999,692 @@ class EstatePictureType:
 
     def __repr__(self):
         return f"EstatePictureType {self.name} ({self.id_})"
+
+
+class CommissioningIdCodeCombination:
+    id_: int
+    code: str
+
+    def __init__(self, id_: int, code: str = None, **kwargs) -> None:
+        if kwargs:
+            pass
+        self.id_ = id_
+        self.code = code
+
+
+class CommissioningIdNameCombination:
+    id_: int
+    name: str
+
+    def __init__(self, id_: int, name: str = None, **kwargs) -> None:
+        if kwargs:
+            pass
+        self.id_ = id_
+        self.name = name
+
+
+class CommissioningCraftProcessType(CommissioningIdCodeCombination):
+    pass
+
+
+class CommissioningCommissionType(CommissioningIdCodeCombination):
+    pass
+
+
+class CommissioningCraftActivity(CommissioningIdCodeCombination):
+    pass
+
+
+class CommissioningNotificationMethod(CommissioningIdCodeCombination):
+    pass
+
+
+class CommissioningDamageDivisionSlim:
+    id_: int
+    id_num: str
+    external_identification_number: str
+    node: Optional[Dict]
+    code: str
+
+    def __init__(self, id_: int, id_num: str = None, external_identification_number: str = None,
+                 node: Dict = None, code: str = None, **kwargs) -> None:
+        if kwargs:
+            pass
+        self.id_ = id_
+        self.id_num = id_num
+        self.external_identification_number = external_identification_number
+        self.node = node
+        self.code = code
+
+
+class CommissioningDamageDivision:
+    id_: int
+    id_num: str
+    external_identification_number: str
+    node: Optional[Dict]
+    damage_division: str
+
+    def __init__(self, id_: int, id_num: str = None, external_identification_number: str = None,
+                 node: Dict = None, damage_division: str = None, **kwargs) -> None:
+        if kwargs:
+            pass
+        self.id_ = id_
+        self.id_num = id_num
+        self.external_identification_number = external_identification_number
+        self.node = node
+        self.damage_division = damage_division
+
+
+class CommissioningDamageCauseSlim:
+    id_: int
+    id_num: str
+    damage_cause: str
+
+    def __init__(self, id_: int, id_num: str = None, damage_cause: str = None, **kwargs) -> None:
+        if kwargs:
+            pass
+        self.id_ = id_
+        self.id_num = id_num
+        self.damage_cause = damage_cause
+
+
+class CommissioningDamageCause:
+    id_: int
+    id_num: str
+    damage_cause: str
+    external_identification_number: str
+    is_active: bool
+    damage_division: Optional[CommissioningDamageDivisionSlim]
+
+    def __init__(self, id_: int, id_num: str = None, damage_cause: str = None,
+                 external_identification_number: str = None, is_active: bool = None,
+                 damage_division: Dict = None, **kwargs) -> None:
+        if kwargs:
+            pass
+        self.id_ = id_
+        self.id_num = id_num
+        self.damage_cause = damage_cause
+        self.external_identification_number = external_identification_number
+        self.is_active = is_active
+        if damage_division is not None:
+            if "id" in damage_division.keys():
+                damage_division["id_"] = damage_division.pop("id")
+            self.damage_division = CommissioningDamageDivisionSlim(**damage_division)
+        else:
+            self.damage_division = None
+
+
+class CommissioningCraftsmanSlim:
+    id_: int
+    creditor_id: int
+    creditor_number: str
+
+    def __init__(self, id_: int, creditor_id: int = None, creditor_number: str = None, **kwargs) -> None:
+        if kwargs:
+            pass
+        self.id_ = id_
+        self.creditor_id = creditor_id
+        self.creditor_number = creditor_number
+
+
+class CommissioningCraftsman:
+    id_: int
+    creditor_id: int
+    creditor_number: str
+    person: Optional[Person]
+    main_communication: Optional[Communication]
+    craftsman_accessibility: Optional[Dict]
+
+    def __init__(self, id_: int, creditor_id: int = None, creditor_number: str = None,
+                 person: Dict = None, main_communication: Dict = None,
+                 craftsman_accessibility: Dict = None, **kwargs) -> None:
+        if kwargs:
+            pass
+        self.id_ = id_
+        self.creditor_id = creditor_id
+        self.creditor_number = creditor_number
+        if person is not None:
+            if "id" in person.keys():
+                person["id_"] = person.pop("id")
+            self.person = Person(**person)
+        else:
+            self.person = None
+        if main_communication is not None:
+            if "id" in main_communication.keys():
+                main_communication["id_"] = main_communication.pop("id")
+            self.main_communication = Communication(**main_communication)
+        else:
+            self.main_communication = None
+        self.craftsman_accessibility = craftsman_accessibility
+
+
+class CommissioningCraftsProcessSlim:
+    id_: int
+    id_num: str
+
+    def __init__(self, id_: int, id_num: str = None, **kwargs) -> None:
+        if kwargs:
+            pass
+        self.id_ = id_
+        self.id_num = id_num
+
+
+class CommissioningCraftsProcessInsuranceData:
+    id_: int
+    time_damage: Optional[datetime]
+    major_loss_indicator: bool
+    estimated_amount_of_damage: Optional[Decimal]
+    insurer_claim_number: str
+    available_police_report: bool
+    police_report_date: Optional[datetime]
+    file_number: str
+    police_department: str
+    damage_cause: Optional[CommissioningDamageCauseSlim]
+    damage_division: Optional[CommissioningDamageDivisionSlim]
+
+    def __init__(self, id_: int, time_damage: str = None, major_loss_indicator: bool = None,
+                 estimated_amount_of_damage: Decimal = None, insurer_claim_number: str = None,
+                 available_police_report: bool = None, police_report_date: str = None,
+                 file_number: str = None, police_department: str = None,
+                 damage_cause: Dict = None, damage_division: Dict = None, **kwargs) -> None:
+        if kwargs:
+            pass
+        self.id_ = id_
+        self.time_damage = convert_to_date(time_damage) if time_damage else None
+        self.major_loss_indicator = major_loss_indicator
+        self.estimated_amount_of_damage = estimated_amount_of_damage
+        self.insurer_claim_number = insurer_claim_number
+        self.available_police_report = available_police_report
+        self.police_report_date = convert_to_date(police_report_date) if police_report_date else None
+        self.file_number = file_number
+        self.police_department = police_department
+        if damage_cause is not None:
+            if "id" in damage_cause.keys():
+                damage_cause["id_"] = damage_cause.pop("id")
+            self.damage_cause = CommissioningDamageCauseSlim(**damage_cause)
+        else:
+            self.damage_cause = None
+        if damage_division is not None:
+            if "id" in damage_division.keys():
+                damage_division["id_"] = damage_division.pop("id")
+            self.damage_division = CommissioningDamageDivisionSlim(**damage_division)
+        else:
+            self.damage_division = None
+
+
+class CommissioningCraftsProcessNote:
+    id_: int
+    crafts_process: Optional[CommissioningCraftsProcessSlim]
+    user: Optional[Dict]
+    date: Optional[datetime]
+    description: str
+
+    def __init__(self, id_: int, crafts_process: Dict = None, user: Dict = None,
+                 date: str = None, description: str = None, **kwargs) -> None:
+        if kwargs:
+            pass
+        self.id_ = id_
+        if crafts_process is not None:
+            if "id" in crafts_process.keys():
+                crafts_process["id_"] = crafts_process.pop("id")
+            self.crafts_process = CommissioningCraftsProcessSlim(**crafts_process)
+        else:
+            self.crafts_process = None
+        self.user = user
+        self.date = convert_to_date(date) if date else None
+        self.description = description
+
+
+class CommissioningCraftsProcess:
+    id_: int
+    id_num: str
+    short_description_crafts_process: str
+    description: str
+    crafts_process_type: Optional[CommissioningCraftProcessType]
+    crafts_process_status: Optional[CommissioningIdCodeCombination]
+    craftsman: Optional[CommissioningCraftsmanSlim]
+    commission: Optional[Commission]
+    commissions: Optional[List[Commission]]
+    invoice_receipts: Optional[List[Dict]]
+    insurance_data: Optional[CommissioningCraftsProcessInsuranceData]
+    additional_fields: Optional[List[Dict]]
+
+    def __init__(self, id_: int, id_num: str = None, short_description_crafts_process: str = None,
+                 description: str = None, crafts_process_type: Dict = None,
+                 crafts_process_status: Dict = None, craftsman: Dict = None,
+                 commission: Dict = None, commissions: List[Dict] = None,
+                 invoice_receipts: List[Dict] = None, insurance_data: Dict = None,
+                 additional_fields: List[Dict] = None, **kwargs) -> None:
+        if kwargs:
+            pass
+        self.id_ = id_
+        self.id_num = id_num
+        self.short_description_crafts_process = short_description_crafts_process
+        self.description = description
+        if crafts_process_type is not None:
+            if "id" in crafts_process_type.keys():
+                crafts_process_type["id_"] = crafts_process_type.pop("id")
+            self.crafts_process_type = CommissioningCraftProcessType(**crafts_process_type)
+        else:
+            self.crafts_process_type = None
+        if crafts_process_status is not None:
+            if "id" in crafts_process_status.keys():
+                crafts_process_status["id_"] = crafts_process_status.pop("id")
+            self.crafts_process_status = CommissioningIdCodeCombination(**crafts_process_status)
+        else:
+            self.crafts_process_status = None
+        if craftsman is not None:
+            if "id" in craftsman.keys():
+                craftsman["id_"] = craftsman.pop("id")
+            self.craftsman = CommissioningCraftsmanSlim(**craftsman)
+        else:
+            self.craftsman = None
+        if commission is not None:
+            if "id" in commission.keys():
+                commission["id_"] = commission.pop("id")
+            self.commission = Commission(**commission)
+        else:
+            self.commission = None
+        self.commissions = []
+        if commissions is not None:
+            for entry in commissions:
+                if "id" in entry.keys():
+                    entry["id_"] = entry.pop("id")
+                self.commissions.append(Commission(**entry))
+        else:
+            self.commissions = None
+        self.invoice_receipts = invoice_receipts
+        if insurance_data is not None:
+            if "id" in insurance_data.keys():
+                insurance_data["id_"] = insurance_data.pop("id")
+            self.insurance_data = CommissioningCraftsProcessInsuranceData(**insurance_data)
+        else:
+            self.insurance_data = None
+        self.additional_fields = additional_fields
+
+
+class CommissioningServiceCatalogue:
+    id_: int
+    id_num: str
+    description: str
+    quantity_type: Optional[QuantityType]
+    craft_activity: Optional[CommissioningCraftActivity]
+    component_catalog: Optional[Dict]
+    facility_catalog: Optional[Dict]
+    craftsman_agreements: Optional[List[Dict]]
+    commission_types: Optional[List[CommissioningCommissionType]]
+
+    def __init__(self, id_: int, id_num: str = None, description: str = None,
+                 quantity_type: Dict = None, craft_activity: Dict = None,
+                 component_catalog: Dict = None, facility_catalog: Dict = None,
+                 craftsman_agreements: List[Dict] = None,
+                 commission_types: List[Dict] = None, **kwargs) -> None:
+        if kwargs:
+            pass
+        self.id_ = id_
+        self.id_num = id_num
+        self.description = description
+        if quantity_type is not None:
+            if "id" in quantity_type.keys():
+                quantity_type["id_"] = quantity_type.pop("id")
+            self.quantity_type = QuantityType(**quantity_type)
+        else:
+            self.quantity_type = None
+        if craft_activity is not None:
+            if "id" in craft_activity.keys():
+                craft_activity["id_"] = craft_activity.pop("id")
+            self.craft_activity = CommissioningCraftActivity(**craft_activity)
+        else:
+            self.craft_activity = None
+        self.component_catalog = component_catalog
+        self.facility_catalog = facility_catalog
+        self.craftsman_agreements = craftsman_agreements
+        self.commission_types = []
+        if commission_types is not None:
+            for entry in commission_types:
+                if "id" in entry.keys():
+                    entry["id_"] = entry.pop("id")
+                self.commission_types.append(CommissioningCommissionType(**entry))
+        else:
+            self.commission_types = None
+
+
+class CommissioningServicePackage:
+    id_: int
+    id_num: str
+    code: str
+    craftsman: Optional[CommissioningCraftsmanSlim]
+    service_catalogues: Optional[List[CommissioningServiceCatalogue]]
+
+    def __init__(self, id_: int, id_num: str = None, code: str = None,
+                 craftsman: Dict = None, service_catalogues: List[Dict] = None, **kwargs) -> None:
+        if kwargs:
+            pass
+        self.id_ = id_
+        self.id_num = id_num
+        self.code = code
+        if craftsman is not None:
+            if "id" in craftsman.keys():
+                craftsman["id_"] = craftsman.pop("id")
+            self.craftsman = CommissioningCraftsmanSlim(**craftsman)
+        else:
+            self.craftsman = None
+        self.service_catalogues = []
+        if service_catalogues is not None:
+            for entry in service_catalogues:
+                if "id" in entry.keys():
+                    entry["id_"] = entry.pop("id")
+                self.service_catalogues.append(CommissioningServiceCatalogue(**entry))
+        else:
+            self.service_catalogues = None
+
+
+class CommissioningInvoiceReceiptCommissionItems(InvoiceReceipt):
+    pass
+
+
+class CommissioningInvoiceReceiptPaymentOrders(InvoiceReceipt):
+    pass
+
+
+class CommissioningInsurer:
+    id_: int
+    creditor_id: int
+    creditor_number: str
+    person: Optional[Person]
+    main_communication: Optional[Communication]
+    insurer_accessibility: Optional[Dict]
+
+    def __init__(self, id_: int, creditor_id: int = None, creditor_number: str = None,
+                 person: Dict = None, main_communication: Dict = None,
+                 insurer_accessibility: Dict = None, **kwargs) -> None:
+        if kwargs:
+            pass
+        self.id_ = id_
+        self.creditor_id = creditor_id
+        self.creditor_number = creditor_number
+        if person is not None:
+            if "id" in person.keys():
+                person["id_"] = person.pop("id")
+            self.person = Person(**person)
+        else:
+            self.person = None
+        if main_communication is not None:
+            if "id" in main_communication.keys():
+                main_communication["id_"] = main_communication.pop("id")
+            self.main_communication = Communication(**main_communication)
+        else:
+            self.main_communication = None
+        self.insurer_accessibility = insurer_accessibility
+
+
+class CommissioningInsuranceContract:
+    id_: int
+    id_num: str
+    node_id: int
+    code: str
+    insurer: Optional[CommissioningInsurer]
+    valid_from: Optional[datetime]
+    valid_to: Optional[datetime]
+    assigned_commissioning_insurance_damage_divisions: Optional[List[CommissioningDamageDivision]]
+    assigned_economic_units: Optional[List[Dict]]
+
+    def __init__(self, id_: int, id_num: str = None, node_id: int = None, code: str = None,
+                 insurer: Dict = None, valid_from: str = None, valid_to: str = None,
+                 assigned_commissioning_insurance_damage_divisions: List[Dict] = None,
+                 assigned_economic_units: List[Dict] = None, **kwargs) -> None:
+        if kwargs:
+            pass
+        self.id_ = id_
+        self.id_num = id_num
+        self.node_id = node_id
+        self.code = code
+        if insurer is not None:
+            if "id" in insurer.keys():
+                insurer["id_"] = insurer.pop("id")
+            self.insurer = CommissioningInsurer(**insurer)
+        else:
+            self.insurer = None
+        self.valid_from = convert_to_date(valid_from) if valid_from else None
+        self.valid_to = convert_to_date(valid_to) if valid_to else None
+        self.assigned_commissioning_insurance_damage_divisions = []
+        if assigned_commissioning_insurance_damage_divisions is not None:
+            for entry in assigned_commissioning_insurance_damage_divisions:
+                if "id" in entry.keys():
+                    entry["id_"] = entry.pop("id")
+                self.assigned_commissioning_insurance_damage_divisions.append(CommissioningDamageDivision(**entry))
+        else:
+            self.assigned_commissioning_insurance_damage_divisions = None
+        self.assigned_economic_units = assigned_economic_units
+
+
+class CommissioningCommission:
+    id_: int
+    id_num: str
+    code: str
+    damage_report_code: str
+    damage_location: str
+    damage_report_by: str
+    reason_for_refusal: str
+    contact_person_on_site: str
+    contact_person_engineering: str
+    recording_date: Optional[datetime]
+    release_date: Optional[datetime]
+    placing_date: Optional[datetime]
+    acceptance_date: Optional[datetime]
+    completion_date: Optional[datetime]
+    execution_from: Optional[datetime]
+    execution_to: Optional[datetime]
+    craftsman_portal_import_date: Optional[datetime]
+    time_damage: Optional[datetime]
+    commission_type: Optional[CommissioningCommissionType]
+    commission_status: Optional[CommissionStatus]
+    crafts_process: Optional[CommissioningCraftsProcessSlim]
+    company_code: Optional[CompanyCode]
+    craftsman: Optional[CommissioningCraftsman]
+    license_agreement: Optional[Dict]
+    use_unit: Optional[Dict]
+    economic_unit: Optional[EconomicUnitShort]
+    building: Optional[Dict]
+    responsible_official_repair: Optional[Dict]
+    caretaker: Optional[Dict]
+    architect: Optional[Dict]
+    component: Optional[Component]
+    facility: Optional[Facility]
+    estate_address: Optional[Dict]
+    commission_details: Optional[Dict]
+    commission_notification_method: Optional[CommissioningNotificationMethod]
+    project: Optional[Dict]
+    land: Optional[Dict]
+    department: Optional[Dict]
+    property_management_contract_data: Optional[Dict]
+    commission_items: Optional[List[CommissionItem]]
+    additional_fields: Optional[List[Dict]]
+    defects: Optional[List[Dict]]
+    external_identification_number: str
+    creditor_id: int
+    use_unit_id: int
+    building_id: int
+    land_id: int
+    economic_unit_id: int
+    license_agreement_id: int
+    property_management_contract_id: int
+    responsible_official_repair_id: int
+    department_id: int
+
+    def __init__(self, id_: int,
+                 id_num: str = None,
+                 code: str = None,
+                 damage_report_code: str = None,
+                 damage_location: str = None,
+                 damage_report_by: str = None,
+                 reason_for_refusal: str = None,
+                 contact_person_on_site: str = None,
+                 contact_person_engineering: str = None,
+                 recording_date: str = None,
+                 release_date: str = None,
+                 placing_date: str = None,
+                 acceptance_date: str = None,
+                 completion_date: str = None,
+                 execution_from: str = None,
+                 execution_to: str = None,
+                 craftsman_portal_import_date: str = None,
+                 time_damage: str = None,
+                 commission_type: Dict = None,
+                 commission_status: Dict = None,
+                 crafts_process: Dict = None,
+                 company_code: Dict = None,
+                 craftsman: Dict = None,
+                 license_agreement: Dict = None,
+                 use_unit: Dict = None,
+                 economic_unit: Dict = None,
+                 building: Dict = None,
+                 responsible_official_repair: Dict = None,
+                 caretaker: Dict = None,
+                 architect: Dict = None,
+                 component: Dict = None,
+                 facility: Dict = None,
+                 estate_address: Dict = None,
+                 commission_details: Dict = None,
+                 commission_notification_method: Dict = None,
+                 project: Dict = None,
+                 land: Dict = None,
+                 department: Dict = None,
+                 property_management_contract_data: Dict = None,
+                 commission_items: List[Dict] = None,
+                 additional_fields: List[Dict] = None,
+                 defects: List[Dict] = None,
+                 external_identification_number: str = None,
+                 creditor_id: int = None,
+                 use_unit_id: int = None,
+                 building_id: int = None,
+                 land_id: int = None,
+                 economic_unit_id: int = None,
+                 license_agreement_id: int = None,
+                 property_management_contract_id: int = None,
+                 responsible_official_repair_id: int = None,
+                 department_id: int = None,
+                 **kwargs) -> None:
+        if kwargs:
+            pass
+        self.id_ = id_
+        self.id_num = id_num
+        self.code = code
+        self.damage_report_code = damage_report_code
+        self.damage_location = damage_location
+        self.damage_report_by = damage_report_by
+        self.reason_for_refusal = reason_for_refusal
+        self.contact_person_on_site = contact_person_on_site
+        self.contact_person_engineering = contact_person_engineering
+        self.recording_date = convert_to_date(recording_date) if recording_date else None
+        self.release_date = convert_to_date(release_date) if release_date else None
+        self.placing_date = convert_to_date(placing_date) if placing_date else None
+        self.acceptance_date = convert_to_date(acceptance_date) if acceptance_date else None
+        self.completion_date = convert_to_date(completion_date) if completion_date else None
+        self.execution_from = convert_to_date(execution_from) if execution_from else None
+        self.execution_to = convert_to_date(execution_to) if execution_to else None
+        self.craftsman_portal_import_date = convert_to_date(craftsman_portal_import_date) if craftsman_portal_import_date else None
+        self.time_damage = convert_to_date(time_damage) if time_damage else None
+
+        if commission_type is not None:
+            if "id" in commission_type.keys():
+                commission_type["id_"] = commission_type.pop("id")
+            self.commission_type = CommissioningCommissionType(**commission_type)
+        else:
+            self.commission_type = None
+
+        if commission_status is not None:
+            if "id" in commission_status.keys():
+                commission_status["id_"] = commission_status.pop("id")
+            self.commission_status = CommissionStatus(**commission_status)
+        else:
+            self.commission_status = None
+
+        if crafts_process is not None:
+            if "id" in crafts_process.keys():
+                crafts_process["id_"] = crafts_process.pop("id")
+            self.crafts_process = CommissioningCraftsProcessSlim(**crafts_process)
+        else:
+            self.crafts_process = None
+
+        if company_code is not None:
+            if "id" in company_code.keys():
+                company_code["id_"] = company_code.pop("id")
+            self.company_code = CompanyCode(**company_code)
+        else:
+            self.company_code = None
+
+        if craftsman is not None:
+            if "id" in craftsman.keys():
+                craftsman["id_"] = craftsman.pop("id")
+            self.craftsman = CommissioningCraftsman(**craftsman)
+        else:
+            self.craftsman = None
+
+        self.license_agreement = license_agreement
+        self.use_unit = use_unit
+
+        if economic_unit is not None:
+            if "id" in economic_unit.keys():
+                economic_unit["id_"] = economic_unit.pop("id")
+            self.economic_unit = EconomicUnitShort(**economic_unit)
+        else:
+            self.economic_unit = None
+
+        self.building = building
+        self.responsible_official_repair = responsible_official_repair
+        self.caretaker = caretaker
+        self.architect = architect
+
+        if component is not None:
+            if "id" in component.keys():
+                component["id_"] = component.pop("id")
+            self.component = Component(**component)
+        else:
+            self.component = None
+
+        if facility is not None:
+            if "id" in facility.keys():
+                facility["id_"] = facility.pop("id")
+            self.facility = Facility(**facility)
+        else:
+            self.facility = None
+
+        self.estate_address = estate_address
+        self.commission_details = commission_details
+
+        if commission_notification_method is not None:
+            if "id" in commission_notification_method.keys():
+                commission_notification_method["id_"] = commission_notification_method.pop("id")
+            self.commission_notification_method = CommissioningNotificationMethod(**commission_notification_method)
+        else:
+            self.commission_notification_method = None
+
+        self.project = project
+        self.land = land
+        self.department = department
+        self.property_management_contract_data = property_management_contract_data
+
+        tcommission_items = []
+        if commission_items is not None:
+            for entry in commission_items:
+                if "id" in entry.keys():
+                    entry["id_"] = entry.pop("id")
+                tcommission_item = CommissionItem(**entry)
+                tcommission_items.append(tcommission_item)
+            self.commission_items = tcommission_items
+        else:
+            self.commission_items = None
+
+        self.additional_fields = additional_fields
+        self.defects = defects
+        self.external_identification_number = external_identification_number
+        self.creditor_id = creditor_id
+        self.use_unit_id = use_unit_id
+        self.building_id = building_id
+        self.land_id = land_id
+        self.economic_unit_id = economic_unit_id
+        self.license_agreement_id = license_agreement_id
+        self.property_management_contract_id = property_management_contract_id
+        self.responsible_official_repair_id = responsible_official_repair_id
+        self.department_id = department_id

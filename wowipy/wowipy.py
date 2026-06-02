@@ -2436,3 +2436,969 @@ class WowiPy:
             endpoint=f'CommunicationEdit/Ticket/{ticket_id}',
             data=data_dict)
         return result
+
+    def _format_openwowi_date(self, value):
+        if value is None:
+            return None
+        if isinstance(value, datetime):
+            return value.strftime("%Y-%m-%dT%H:%M:%S")
+        if isinstance(value, date):
+            return value.strftime("%Y-%m-%d")
+        return value
+
+    def _add_openwowi_param(self, filter_params: Dict, param_name: str, value):
+        if value is not None:
+            filter_params[param_name] = self._format_openwowi_date(value)
+
+    def _add_openwowi_data(self, data_dict: Dict, param_name: str, value):
+        if value is not None:
+            data_dict[param_name] = self._format_openwowi_date(value)
+
+    def _get_openwowi_list(self,
+                           endpoint: str,
+                           result_class,
+                           filter_params: Dict = None,
+                           fetch_all: bool = False,
+                           count_label: str = None,
+                           force_refresh: bool = False) -> List:
+        if filter_params is None:
+            filter_params = {}
+
+        retlist = []
+        if not fetch_all:
+            result = self._rest_adapter.get(endpoint=endpoint,
+                                            ep_params=filter_params,
+                                            force_refresh=force_refresh)
+        else:
+            result = Result(0, "", [])
+            merge_schema = {"mergeStrategy": "append"}
+            merger = Merger(schema=merge_schema)
+            filter_params['offset'] = 0
+            filter_params['limit'] = 100
+            response_count = 100
+            while response_count == 100:
+                part_result = self._rest_adapter.get(endpoint=endpoint,
+                                                     ep_params=filter_params,
+                                                     force_refresh=force_refresh)
+                result.data = merger.merge(result.data, part_result.data)
+                filter_params['offset'] += 100
+                response_count = len(part_result.data)
+                if count_label is not None:
+                    print(f"{count_label}-Count: {len(result.data)}")
+
+        for entry in result.data:
+            data = dict(humps.decamelize(entry))
+            if "id" in data.keys():
+                data["id_"] = data.pop("id")
+            ret_la = result_class(**data)
+            retlist.append(ret_la)
+
+        return retlist
+
+    def get_commissioning_craft_process_types(self,
+                                              show_null_values: bool = False,
+                                              add_args: Dict = None) -> List[CommissioningCraftProcessType]:
+        filter_params = {}
+        filter_params['showNullValues'] = 'true' if show_null_values else 'false'
+        if add_args is not None:
+            filter_params.update(add_args)
+        return self._get_openwowi_list('CommissioningCatalog/CraftProcessTypes',
+                                       CommissioningCraftProcessType,
+                                       filter_params,
+                                       force_refresh=True)
+
+    def get_commissioning_commission_types(self,
+                                           include_commission_control: bool = None,
+                                           show_null_values: bool = False,
+                                           add_args: Dict = None) -> List[CommissioningCommissionType]:
+        filter_params = {}
+        self._add_openwowi_param(filter_params, 'includeCommissionControl', include_commission_control)
+        filter_params['showNullValues'] = 'true' if show_null_values else 'false'
+        if add_args is not None:
+            filter_params.update(add_args)
+        return self._get_openwowi_list('CommissioningCatalog/CommissionTypes',
+                                       CommissioningCommissionType,
+                                       filter_params,
+                                       force_refresh=True)
+
+    def get_commissioning_craft_activities(self,
+                                           show_null_values: bool = False,
+                                           add_args: Dict = None) -> List[CommissioningCraftActivity]:
+        filter_params = {}
+        filter_params['showNullValues'] = 'true' if show_null_values else 'false'
+        if add_args is not None:
+            filter_params.update(add_args)
+        return self._get_openwowi_list('CommissioningCatalog/CraftActivities',
+                                       CommissioningCraftActivity,
+                                       filter_params,
+                                       force_refresh=True)
+
+    def get_commissioning_damage_causes_catalog(self,
+                                                show_null_values: bool = False,
+                                                add_args: Dict = None) -> List[CommissioningDamageCause]:
+        filter_params = {}
+        filter_params['showNullValues'] = 'true' if show_null_values else 'false'
+        if add_args is not None:
+            filter_params.update(add_args)
+        return self._get_openwowi_list('CommissioningCatalog/DamageCauses',
+                                       CommissioningDamageCause,
+                                       filter_params,
+                                       force_refresh=True)
+
+    def get_commissioning_damage_divisions_catalog(self,
+                                                   show_null_values: bool = False,
+                                                   add_args: Dict = None) -> List[CommissioningDamageDivision]:
+        filter_params = {}
+        filter_params['showNullValues'] = 'true' if show_null_values else 'false'
+        if add_args is not None:
+            filter_params.update(add_args)
+        return self._get_openwowi_list('CommissioningCatalog/DamageDivisions',
+                                       CommissioningDamageDivision,
+                                       filter_params,
+                                       force_refresh=True)
+
+    def get_commissioning_notification_methods(self,
+                                               show_null_values: bool = False,
+                                               add_args: Dict = None) -> List[CommissioningNotificationMethod]:
+        filter_params = {}
+        filter_params['showNullValues'] = 'true' if show_null_values else 'false'
+        if add_args is not None:
+            filter_params.update(add_args)
+        return self._get_openwowi_list('CommissioningCatalog/CommissionNotificationMethods',
+                                       CommissioningNotificationMethod,
+                                       filter_params,
+                                       force_refresh=True)
+
+    def get_commissioning_craftsmen(self,
+                                    limit: int = None,
+                                    offset: int = 0,
+                                    company_code_id: int = None,
+                                    management_id: int = None,
+                                    creditor_id: int = None,
+                                    creditor_number: str = None,
+                                    craftsman_id: int = None,
+                                    person_id: int = None,
+                                    include_main_communication: bool = False,
+                                    include_person_addresses: bool = False,
+                                    include_person_communications: bool = False,
+                                    include_person_bank_accounts: bool = False,
+                                    include_craftsman_accessibility: bool = False,
+                                    show_null_values: bool = False,
+                                    add_args: Dict = None,
+                                    fetch_all: bool = False) -> List[CommissioningCraftsman]:
+        filter_params = {}
+        self._add_openwowi_param(filter_params, 'limit', limit)
+        self._add_openwowi_param(filter_params, 'offset', offset)
+        self._add_openwowi_param(filter_params, 'companyCodeId', company_code_id)
+        self._add_openwowi_param(filter_params, 'managementId', management_id)
+        self._add_openwowi_param(filter_params, 'creditorId', creditor_id)
+        self._add_openwowi_param(filter_params, 'creditorNumber', creditor_number)
+        self._add_openwowi_param(filter_params, 'craftsmanId', craftsman_id)
+        self._add_openwowi_param(filter_params, 'personId', person_id)
+        filter_params['includeMainCommunication'] = 'true' if include_main_communication else 'false'
+        filter_params['includePersonAddresses'] = 'true' if include_person_addresses else 'false'
+        filter_params['includePersonCommunications'] = 'true' if include_person_communications else 'false'
+        filter_params['includePersonBankAccounts'] = 'true' if include_person_bank_accounts else 'false'
+        filter_params['includeCraftsmanAccessibility'] = 'true' if include_craftsman_accessibility else 'false'
+        filter_params['showNullValues'] = 'true' if show_null_values else 'false'
+        if add_args is not None:
+            filter_params.update(add_args)
+        return self._get_openwowi_list('CommissioningRead/Craftsman',
+                                       CommissioningCraftsman,
+                                       filter_params,
+                                       fetch_all,
+                                       'Craftsman')
+
+    def get_commissioning_crafts_processes(self,
+                                           limit: int = None,
+                                           offset: int = 0,
+                                           id_: int = None,
+                                           id_num: str = None,
+                                           company_code_id: int = None,
+                                           company_code_code: str = None,
+                                           economic_unit_id: int = None,
+                                           building_id: int = None,
+                                           land_id: int = None,
+                                           use_unit_id: int = None,
+                                           license_agreement_id: int = None,
+                                           craftsman_id: int = None,
+                                           service_package_id: int = None,
+                                           crafts_process_type_id: int = None,
+                                           commission_id: int = None,
+                                           invoice_receipt_id: int = None,
+                                           include_commission: bool = False,
+                                           include_invoice_receipt: bool = False,
+                                           include_additional_field: bool = False,
+                                           include_insurance_data: bool = False,
+                                           show_null_values: bool = False,
+                                           add_args: Dict = None,
+                                           fetch_all: bool = False) -> List[CommissioningCraftsProcess]:
+        filter_params = {}
+        self._add_openwowi_param(filter_params, 'limit', limit)
+        self._add_openwowi_param(filter_params, 'offset', offset)
+        self._add_openwowi_param(filter_params, 'id', id_)
+        self._add_openwowi_param(filter_params, 'idNum', id_num)
+        self._add_openwowi_param(filter_params, 'companyCodeId', company_code_id)
+        self._add_openwowi_param(filter_params, 'companyCodeCode', company_code_code)
+        self._add_openwowi_param(filter_params, 'economicUnitId', economic_unit_id)
+        self._add_openwowi_param(filter_params, 'buildingId', building_id)
+        self._add_openwowi_param(filter_params, 'landId', land_id)
+        self._add_openwowi_param(filter_params, 'useUnitId', use_unit_id)
+        self._add_openwowi_param(filter_params, 'licenseAgreementId', license_agreement_id)
+        self._add_openwowi_param(filter_params, 'craftsmanId', craftsman_id)
+        self._add_openwowi_param(filter_params, 'servicePackageId', service_package_id)
+        self._add_openwowi_param(filter_params, 'craftsProcessTypeId', crafts_process_type_id)
+        self._add_openwowi_param(filter_params, 'commissionId', commission_id)
+        self._add_openwowi_param(filter_params, 'invoiceReceiptId', invoice_receipt_id)
+        filter_params['includeCommission'] = 'true' if include_commission else 'false'
+        filter_params['includeInvoiceReceipt'] = 'true' if include_invoice_receipt else 'false'
+        filter_params['includeAdditionalField'] = 'true' if include_additional_field else 'false'
+        filter_params['includeInsuranceData'] = 'true' if include_insurance_data else 'false'
+        filter_params['showNullValues'] = 'true' if show_null_values else 'false'
+        if add_args is not None:
+            filter_params.update(add_args)
+        return self._get_openwowi_list('CommissioningRead/CraftProcesses',
+                                       CommissioningCraftsProcess,
+                                       filter_params,
+                                       fetch_all,
+                                       'CraftsProcess')
+
+    def get_commissioning_crafts_process_notes(self,
+                                               limit: int = None,
+                                               offset: int = 0,
+                                               id_: int = None,
+                                               crafts_process_id: int = None,
+                                               crafts_process_id_num: str = None,
+                                               company_code_id: int = None,
+                                               company_code_code: str = None,
+                                               show_null_values: bool = False,
+                                               add_args: Dict = None,
+                                               fetch_all: bool = False) -> List[CommissioningCraftsProcessNote]:
+        filter_params = {}
+        self._add_openwowi_param(filter_params, 'limit', limit)
+        self._add_openwowi_param(filter_params, 'offset', offset)
+        self._add_openwowi_param(filter_params, 'id', id_)
+        self._add_openwowi_param(filter_params, 'craftsProcessId', crafts_process_id)
+        self._add_openwowi_param(filter_params, 'craftsProcessIdNum', crafts_process_id_num)
+        self._add_openwowi_param(filter_params, 'companyCodeId', company_code_id)
+        self._add_openwowi_param(filter_params, 'companyCodeCode', company_code_code)
+        filter_params['showNullValues'] = 'true' if show_null_values else 'false'
+        if add_args is not None:
+            filter_params.update(add_args)
+        return self._get_openwowi_list('CommissioningRead/CraftProcess/Note',
+                                       CommissioningCraftsProcessNote,
+                                       filter_params,
+                                       fetch_all,
+                                       'CraftsProcessNote')
+
+    def get_commissioning_commissions(self,
+                                      limit: int = None,
+                                      offset: int = 0,
+                                      id_: int = None,
+                                      id_num: str = None,
+                                      crafts_process_id: int = None,
+                                      crafts_process_id_num: str = None,
+                                      craftsman_id: int = None,
+                                      commission_type_id: int = None,
+                                      company_code_id: int = None,
+                                      company_code_code: str = None,
+                                      include_commission_items: bool = True,
+                                      include_also_canceled_commission_items: bool = False,
+                                      include_responsible_official_repair: bool = False,
+                                      include_commission_details: bool = True,
+                                      include_defects: bool = False,
+                                      include_additional_field: bool = False,
+                                      show_null_values: bool = True,
+                                      add_args: Dict = None,
+                                      fetch_all: bool = False) -> List[CommissioningCommission]:
+        filter_params = {}
+        self._add_openwowi_param(filter_params, 'limit', limit)
+        self._add_openwowi_param(filter_params, 'offset', offset)
+        self._add_openwowi_param(filter_params, 'id', id_)
+        self._add_openwowi_param(filter_params, 'idNum', id_num)
+        self._add_openwowi_param(filter_params, 'craftsProcessId', crafts_process_id)
+        self._add_openwowi_param(filter_params, 'craftsProcessIdNum', crafts_process_id_num)
+        self._add_openwowi_param(filter_params, 'craftsmanId', craftsman_id)
+        self._add_openwowi_param(filter_params, 'commissionTypeId', commission_type_id)
+        self._add_openwowi_param(filter_params, 'companyCodeId', company_code_id)
+        self._add_openwowi_param(filter_params, 'companyCodeCode', company_code_code)
+        filter_params['includeCommissionItems'] = 'true' if include_commission_items else 'false'
+        filter_params['includeAlsoCanceledCommissionItems'] = 'true' if include_also_canceled_commission_items else 'false'
+        filter_params['includeResponsibleOfficialRepair'] = 'true' if include_responsible_official_repair else 'false'
+        filter_params['includeCommissionDetails'] = 'true' if include_commission_details else 'false'
+        filter_params['includeDefects'] = 'true' if include_defects else 'false'
+        filter_params['includeAdditionalField'] = 'true' if include_additional_field else 'false'
+        filter_params['showNullValues'] = 'true' if show_null_values else 'false'
+        if add_args is not None:
+            filter_params.update(add_args)
+        return self._get_openwowi_list('CommissioningRead/Commissions',
+                                       CommissioningCommission,
+                                       filter_params,
+                                       fetch_all,
+                                       'Commission')
+
+    def get_commissioning_invoice_receipt_commission_items(self,
+                                                           limit: int = None,
+                                                           offset: int = 0,
+                                                           id_: int = None,
+                                                           number: str = None,
+                                                           company_code_id: int = None,
+                                                           company_code_code: str = None,
+                                                           commission_id: int = None,
+                                                           commission_id_num: str = None,
+                                                           maturity_date_from=None,
+                                                           maturity_date_to=None,
+                                                           invoice_date_from=None,
+                                                           invoice_date_to=None,
+                                                           include_payment_order: bool = False,
+                                                           show_null_values: bool = False,
+                                                           add_args: Dict = None,
+                                                           fetch_all: bool = False) -> List[CommissioningInvoiceReceiptCommissionItems]:
+        filter_params = {}
+        self._add_openwowi_param(filter_params, 'limit', limit)
+        self._add_openwowi_param(filter_params, 'offset', offset)
+        self._add_openwowi_param(filter_params, 'id', id_)
+        self._add_openwowi_param(filter_params, 'number', number)
+        self._add_openwowi_param(filter_params, 'companyCodeId', company_code_id)
+        self._add_openwowi_param(filter_params, 'companyCodeCode', company_code_code)
+        self._add_openwowi_param(filter_params, 'commissionId', commission_id)
+        self._add_openwowi_param(filter_params, 'commissionIdNum', commission_id_num)
+        self._add_openwowi_param(filter_params, 'maturityDateFrom', maturity_date_from)
+        self._add_openwowi_param(filter_params, 'maturityDateTo', maturity_date_to)
+        self._add_openwowi_param(filter_params, 'invoiceDateFrom', invoice_date_from)
+        self._add_openwowi_param(filter_params, 'invoiceDateTo', invoice_date_to)
+        filter_params['includePaymentOrder'] = 'true' if include_payment_order else 'false'
+        filter_params['showNullValues'] = 'true' if show_null_values else 'false'
+        if add_args is not None:
+            filter_params.update(add_args)
+        return self._get_openwowi_list('CommissioningRead/InvoiceReceipt/CommissionItems',
+                                       CommissioningInvoiceReceiptCommissionItems,
+                                       filter_params,
+                                       fetch_all,
+                                       'InvoiceReceiptCommissionItems')
+
+    def get_commissioning_invoice_receipt_payment_orders(self,
+                                                         limit: int = None,
+                                                         offset: int = 0,
+                                                         id_: int = None,
+                                                         number: str = None,
+                                                         company_code_id: int = None,
+                                                         company_code_code: str = None,
+                                                         commission_id: int = None,
+                                                         commission_id_num: str = None,
+                                                         maturity_date_from=None,
+                                                         maturity_date_to=None,
+                                                         invoice_date_from=None,
+                                                         invoice_date_to=None,
+                                                         show_null_values: bool = False,
+                                                         add_args: Dict = None,
+                                                         fetch_all: bool = False) -> List[CommissioningInvoiceReceiptPaymentOrders]:
+        filter_params = {}
+        self._add_openwowi_param(filter_params, 'limit', limit)
+        self._add_openwowi_param(filter_params, 'offset', offset)
+        self._add_openwowi_param(filter_params, 'id', id_)
+        self._add_openwowi_param(filter_params, 'number', number)
+        self._add_openwowi_param(filter_params, 'companyCodeId', company_code_id)
+        self._add_openwowi_param(filter_params, 'companyCodeCode', company_code_code)
+        self._add_openwowi_param(filter_params, 'commissionId', commission_id)
+        self._add_openwowi_param(filter_params, 'commissionIdNum', commission_id_num)
+        self._add_openwowi_param(filter_params, 'maturityDateFrom', maturity_date_from)
+        self._add_openwowi_param(filter_params, 'maturityDateTo', maturity_date_to)
+        self._add_openwowi_param(filter_params, 'invoiceDateFrom', invoice_date_from)
+        self._add_openwowi_param(filter_params, 'invoiceDateTo', invoice_date_to)
+        filter_params['showNullValues'] = 'true' if show_null_values else 'false'
+        if add_args is not None:
+            filter_params.update(add_args)
+        return self._get_openwowi_list('CommissioningRead/InvoiceReceipt/PaymentOrders',
+                                       CommissioningInvoiceReceiptPaymentOrders,
+                                       filter_params,
+                                       fetch_all,
+                                       'InvoiceReceiptPaymentOrders')
+
+    def get_commissioning_service_catalogues(self,
+                                             limit: int = None,
+                                             offset: int = 0,
+                                             id_: int = None,
+                                             id_num: str = None,
+                                             owner_id: int = None,
+                                             owner_number: str = None,
+                                             management_id: int = None,
+                                             management_id_num: str = None,
+                                             component_catalog_id: int = None,
+                                             facility_catalog_id: int = None,
+                                             include_invalid: bool = False,
+                                             include_craftsman_agreements: bool = False,
+                                             include_commission_types: bool = False,
+                                             show_null_values: bool = False,
+                                             add_args: Dict = None,
+                                             fetch_all: bool = False) -> List[CommissioningServiceCatalogue]:
+        filter_params = {}
+        self._add_openwowi_param(filter_params, 'limit', limit)
+        self._add_openwowi_param(filter_params, 'offset', offset)
+        self._add_openwowi_param(filter_params, 'id', id_)
+        self._add_openwowi_param(filter_params, 'idNum', id_num)
+        self._add_openwowi_param(filter_params, 'ownerId', owner_id)
+        self._add_openwowi_param(filter_params, 'ownerNumber', owner_number)
+        self._add_openwowi_param(filter_params, 'managementId', management_id)
+        self._add_openwowi_param(filter_params, 'managementIdNum', management_id_num)
+        self._add_openwowi_param(filter_params, 'componentCatalogId', component_catalog_id)
+        self._add_openwowi_param(filter_params, 'facilityCatalogId', facility_catalog_id)
+        filter_params['includeInvalid'] = 'true' if include_invalid else 'false'
+        filter_params['includeCraftsmanAgreements'] = 'true' if include_craftsman_agreements else 'false'
+        filter_params['includeCommissionTypes'] = 'true' if include_commission_types else 'false'
+        filter_params['showNullValues'] = 'true' if show_null_values else 'false'
+        if add_args is not None:
+            filter_params.update(add_args)
+        return self._get_openwowi_list('CommissioningRead/ServiceCatalogue',
+                                       CommissioningServiceCatalogue,
+                                       filter_params,
+                                       fetch_all,
+                                       'ServiceCatalogue')
+
+    def get_commissioning_service_catalogues_for_craftsman(self,
+                                                           craftsman_id: int,
+                                                           limit: int = None,
+                                                           offset: int = 0,
+                                                           id_: int = None,
+                                                           id_num: str = None,
+                                                           owner_id: int = None,
+                                                           owner_number: str = None,
+                                                           management_id: int = None,
+                                                           management_id_num: str = None,
+                                                           component_catalog_id: int = None,
+                                                           facility_catalog_id: int = None,
+                                                           include_invalid: bool = False,
+                                                           include_commission_types: bool = False,
+                                                           show_null_values: bool = False,
+                                                           add_args: Dict = None,
+                                                           fetch_all: bool = False) -> List[CommissioningServiceCatalogue]:
+        filter_params = {}
+        self._add_openwowi_param(filter_params, 'limit', limit)
+        self._add_openwowi_param(filter_params, 'offset', offset)
+        self._add_openwowi_param(filter_params, 'id', id_)
+        self._add_openwowi_param(filter_params, 'idNum', id_num)
+        self._add_openwowi_param(filter_params, 'ownerId', owner_id)
+        self._add_openwowi_param(filter_params, 'ownerNumber', owner_number)
+        self._add_openwowi_param(filter_params, 'managementId', management_id)
+        self._add_openwowi_param(filter_params, 'managementIdNum', management_id_num)
+        self._add_openwowi_param(filter_params, 'componentCatalogId', component_catalog_id)
+        self._add_openwowi_param(filter_params, 'facilityCatalogId', facility_catalog_id)
+        filter_params['includeInvalid'] = 'true' if include_invalid else 'false'
+        filter_params['includeCommissionTypes'] = 'true' if include_commission_types else 'false'
+        filter_params['showNullValues'] = 'true' if show_null_values else 'false'
+        if add_args is not None:
+            filter_params.update(add_args)
+        return self._get_openwowi_list(f'CommissioningRead/Craftsman/{craftsman_id}/ServiceCatalogue',
+                                       CommissioningServiceCatalogue,
+                                       filter_params,
+                                       fetch_all,
+                                       'CraftsmanServiceCatalogue')
+
+    def get_commissioning_service_packages(self,
+                                           limit: int = None,
+                                           offset: int = 0,
+                                           id_: int = None,
+                                           id_num: str = None,
+                                           owner_id: int = None,
+                                           owner_number: str = None,
+                                           management_id: int = None,
+                                           management_id_num: str = None,
+                                           include_craftsman: bool = False,
+                                           include_service_catalogues: bool = False,
+                                           show_null_values: bool = False,
+                                           add_args: Dict = None,
+                                           fetch_all: bool = False) -> List[CommissioningServicePackage]:
+        filter_params = {}
+        self._add_openwowi_param(filter_params, 'limit', limit)
+        self._add_openwowi_param(filter_params, 'offset', offset)
+        self._add_openwowi_param(filter_params, 'id', id_)
+        self._add_openwowi_param(filter_params, 'idNum', id_num)
+        self._add_openwowi_param(filter_params, 'ownerId', owner_id)
+        self._add_openwowi_param(filter_params, 'ownerNumber', owner_number)
+        self._add_openwowi_param(filter_params, 'managementId', management_id)
+        self._add_openwowi_param(filter_params, 'managementIdNum', management_id_num)
+        filter_params['includeCraftsman'] = 'true' if include_craftsman else 'false'
+        filter_params['includeServiceCatalogues'] = 'true' if include_service_catalogues else 'false'
+        filter_params['showNullValues'] = 'true' if show_null_values else 'false'
+        if add_args is not None:
+            filter_params.update(add_args)
+        return self._get_openwowi_list('CommissioningRead/ServicePackage',
+                                       CommissioningServicePackage,
+                                       filter_params,
+                                       fetch_all,
+                                       'ServicePackage')
+
+    def get_commissioning_insurers(self,
+                                   limit: int = None,
+                                   offset: int = 0,
+                                   company_code_id: int = None,
+                                   management_id: int = None,
+                                   creditor_id: int = None,
+                                   creditor_number: str = None,
+                                   insurer_id: int = None,
+                                   person_id: int = None,
+                                   include_main_communication: bool = False,
+                                   include_person_addresses: bool = False,
+                                   include_person_communications: bool = False,
+                                   include_person_bank_accounts: bool = False,
+                                   include_insurer_accessibility: bool = False,
+                                   show_null_values: bool = False,
+                                   add_args: Dict = None,
+                                   fetch_all: bool = False) -> List[CommissioningInsurer]:
+        filter_params = {}
+        self._add_openwowi_param(filter_params, 'limit', limit)
+        self._add_openwowi_param(filter_params, 'offset', offset)
+        self._add_openwowi_param(filter_params, 'companyCodeId', company_code_id)
+        self._add_openwowi_param(filter_params, 'managementId', management_id)
+        self._add_openwowi_param(filter_params, 'creditorId', creditor_id)
+        self._add_openwowi_param(filter_params, 'creditorNumber', creditor_number)
+        self._add_openwowi_param(filter_params, 'insurerId', insurer_id)
+        self._add_openwowi_param(filter_params, 'personId', person_id)
+        filter_params['includeMainCommunication'] = 'true' if include_main_communication else 'false'
+        filter_params['includePersonAddresses'] = 'true' if include_person_addresses else 'false'
+        filter_params['includePersonCommunications'] = 'true' if include_person_communications else 'false'
+        filter_params['includePersonBankAccounts'] = 'true' if include_person_bank_accounts else 'false'
+        filter_params['includeInsurerAccessibility'] = 'true' if include_insurer_accessibility else 'false'
+        filter_params['showNullValues'] = 'true' if show_null_values else 'false'
+        if add_args is not None:
+            filter_params.update(add_args)
+        return self._get_openwowi_list('CommissioningRead/Insurer',
+                                       CommissioningInsurer,
+                                       filter_params,
+                                       fetch_all,
+                                       'Insurer')
+
+    def get_commissioning_insurance_contracts(self,
+                                              limit: int = None,
+                                              offset: int = 0,
+                                              id_: int = None,
+                                              id_num: str = None,
+                                              insurer_id: int = None,
+                                              economic_unit_id: int = None,
+                                              valid_from=None,
+                                              valid_to=None,
+                                              show_null_values: bool = False,
+                                              add_args: Dict = None,
+                                              fetch_all: bool = False) -> List[CommissioningInsuranceContract]:
+        filter_params = {}
+        self._add_openwowi_param(filter_params, 'limit', limit)
+        self._add_openwowi_param(filter_params, 'offset', offset)
+        self._add_openwowi_param(filter_params, 'id', id_)
+        self._add_openwowi_param(filter_params, 'idNum', id_num)
+        self._add_openwowi_param(filter_params, 'insurerId', insurer_id)
+        self._add_openwowi_param(filter_params, 'economicUnitId', economic_unit_id)
+        self._add_openwowi_param(filter_params, 'validFrom', valid_from)
+        self._add_openwowi_param(filter_params, 'validTo', valid_to)
+        filter_params['showNullValues'] = 'true' if show_null_values else 'false'
+        if add_args is not None:
+            filter_params.update(add_args)
+        return self._get_openwowi_list('CommissioningRead/InsuranceContract',
+                                       CommissioningInsuranceContract,
+                                       filter_params,
+                                       fetch_all,
+                                       'InsuranceContract')
+
+    def get_commissioning_invoice_receipt_flow_commission_items(self,
+                                                                limit: int = None,
+                                                                offset: int = 0,
+                                                                id_: int = None,
+                                                                number: str = None,
+                                                                company_code_id: int = None,
+                                                                company_code_code: str = None,
+                                                                commission_id: int = None,
+                                                                commission_id_num: str = None,
+                                                                maturity_date_from=None,
+                                                                maturity_date_to=None,
+                                                                invoice_date_from=None,
+                                                                invoice_date_to=None,
+                                                                include_payment_order: bool = False,
+                                                                show_null_values: bool = False,
+                                                                add_args: Dict = None,
+                                                                fetch_all: bool = False) -> List[CommissioningInvoiceReceiptCommissionItems]:
+        filter_params = {}
+        self._add_openwowi_param(filter_params, 'limit', limit)
+        self._add_openwowi_param(filter_params, 'offset', offset)
+        self._add_openwowi_param(filter_params, 'id', id_)
+        self._add_openwowi_param(filter_params, 'number', number)
+        self._add_openwowi_param(filter_params, 'companyCodeId', company_code_id)
+        self._add_openwowi_param(filter_params, 'companyCodeCode', company_code_code)
+        self._add_openwowi_param(filter_params, 'commissionId', commission_id)
+        self._add_openwowi_param(filter_params, 'commissionIdNum', commission_id_num)
+        self._add_openwowi_param(filter_params, 'maturityDateFrom', maturity_date_from)
+        self._add_openwowi_param(filter_params, 'maturityDateTo', maturity_date_to)
+        self._add_openwowi_param(filter_params, 'invoiceDateFrom', invoice_date_from)
+        self._add_openwowi_param(filter_params, 'invoiceDateTo', invoice_date_to)
+        filter_params['includePaymentOrder'] = 'true' if include_payment_order else 'false'
+        filter_params['showNullValues'] = 'true' if show_null_values else 'false'
+        if add_args is not None:
+            filter_params.update(add_args)
+        return self._get_openwowi_list('CommissioningRead/InvoiceReceiptNew/CommissionItems',
+                                       CommissioningInvoiceReceiptCommissionItems,
+                                       filter_params,
+                                       fetch_all,
+                                       'InvoiceReceiptFlowCommissionItems')
+
+    def create_commissioning_crafts_process(self,
+                                            short_description_crafts_process: str = None,
+                                            crafts_process_type_id: int = None,
+                                            company_code_id: int = None,
+                                            crafts_process_status_id: int = None,
+                                            service_package_id: int = None,
+                                            project_id: int = None,
+                                            management_id: int = None,
+                                            owner_id: int = None,
+                                            economic_unit_id: int = None,
+                                            building_id: int = None,
+                                            land_id: int = None,
+                                            use_unit_id: int = None,
+                                            license_agreement_id: int = None,
+                                            person_in_charge_responsible_official_id: int = None,
+                                            crafts_process_from=None,
+                                            crafts_process_to=None,
+                                            insurance_data: Dict = None,
+                                            id_num: str = None,
+                                            description: str = None,
+                                            add_args: Dict = None):
+        data_dict = {}
+        self._add_openwowi_data(data_dict, 'ShortDescriptionCraftsProcess', short_description_crafts_process)
+        self._add_openwowi_data(data_dict, 'CraftsProcessTypeId', crafts_process_type_id)
+        self._add_openwowi_data(data_dict, 'CompanyCodeId', company_code_id)
+        self._add_openwowi_data(data_dict, 'CraftsProcessStatusId', crafts_process_status_id)
+        self._add_openwowi_data(data_dict, 'ServicePackageId', service_package_id)
+        self._add_openwowi_data(data_dict, 'ProjectId', project_id)
+        self._add_openwowi_data(data_dict, 'ManagementId', management_id)
+        self._add_openwowi_data(data_dict, 'OwnerId', owner_id)
+        self._add_openwowi_data(data_dict, 'EconomicUnitId', economic_unit_id)
+        self._add_openwowi_data(data_dict, 'BuildingId', building_id)
+        self._add_openwowi_data(data_dict, 'LandId', land_id)
+        self._add_openwowi_data(data_dict, 'UseUnitId', use_unit_id)
+        self._add_openwowi_data(data_dict, 'LicenseAgreementId', license_agreement_id)
+        self._add_openwowi_data(data_dict, 'PersonInChargeResponsibleOfficialId', person_in_charge_responsible_official_id)
+        self._add_openwowi_data(data_dict, 'CraftsProcessFrom', crafts_process_from)
+        self._add_openwowi_data(data_dict, 'CraftsProcessTo', crafts_process_to)
+        self._add_openwowi_data(data_dict, 'InsuranceData', insurance_data)
+        self._add_openwowi_data(data_dict, 'IdNum', id_num)
+        self._add_openwowi_data(data_dict, 'Description', description)
+        if add_args is not None:
+            data_dict.update(add_args)
+        return self._rest_adapter.post(endpoint='CommissioningEdit/CraftsProcess', data=data_dict)
+
+    def edit_commissioning_crafts_process(self,
+                                          crafts_process_id: int,
+                                          short_description_crafts_process: str = None,
+                                          crafts_process_type_id: int = None,
+                                          company_code_id: int = None,
+                                          crafts_process_status_id: int = None,
+                                          service_package_id: int = None,
+                                          project_id: int = None,
+                                          management_id: int = None,
+                                          owner_id: int = None,
+                                          economic_unit_id: int = None,
+                                          building_id: int = None,
+                                          land_id: int = None,
+                                          use_unit_id: int = None,
+                                          license_agreement_id: int = None,
+                                          person_in_charge_responsible_official_id: int = None,
+                                          crafts_process_from=None,
+                                          crafts_process_to=None,
+                                          insurance_data: Dict = None,
+                                          add_args: Dict = None):
+        data_dict = {}
+        self._add_openwowi_data(data_dict, 'ShortDescriptionCraftsProcess', short_description_crafts_process)
+        self._add_openwowi_data(data_dict, 'CraftsProcessTypeId', crafts_process_type_id)
+        self._add_openwowi_data(data_dict, 'CompanyCodeId', company_code_id)
+        self._add_openwowi_data(data_dict, 'CraftsProcessStatusId', crafts_process_status_id)
+        self._add_openwowi_data(data_dict, 'ServicePackageId', service_package_id)
+        self._add_openwowi_data(data_dict, 'ProjectId', project_id)
+        self._add_openwowi_data(data_dict, 'ManagementId', management_id)
+        self._add_openwowi_data(data_dict, 'OwnerId', owner_id)
+        self._add_openwowi_data(data_dict, 'EconomicUnitId', economic_unit_id)
+        self._add_openwowi_data(data_dict, 'BuildingId', building_id)
+        self._add_openwowi_data(data_dict, 'LandId', land_id)
+        self._add_openwowi_data(data_dict, 'UseUnitId', use_unit_id)
+        self._add_openwowi_data(data_dict, 'LicenseAgreementId', license_agreement_id)
+        self._add_openwowi_data(data_dict, 'PersonInChargeResponsibleOfficialId', person_in_charge_responsible_official_id)
+        self._add_openwowi_data(data_dict, 'CraftsProcessFrom', crafts_process_from)
+        self._add_openwowi_data(data_dict, 'CraftsProcessTo', crafts_process_to)
+        self._add_openwowi_data(data_dict, 'InsuranceData', insurance_data)
+        if add_args is not None:
+            data_dict.update(add_args)
+        return self._rest_adapter.put(endpoint=f'CommissioningEdit/CraftsProcess/{crafts_process_id}', data=data_dict)
+
+    def delete_commissioning_crafts_process(self, crafts_process_id: int):
+        data_dict = {}
+        return self._rest_adapter.delete(endpoint=f'CommissioningEdit/CraftsProcess/{crafts_process_id}', data=data_dict)
+
+    def create_commissioning_commission(self,
+                                        crafts_process_id: int = None,
+                                        id_num: str = None,
+                                        code: str = None,
+                                        external_identification_number: str = None,
+                                        commission_type_id: int = None,
+                                        creditor_id: int = None,
+                                        use_unit_id: int = None,
+                                        building_id: int = None,
+                                        land_id: int = None,
+                                        economic_unit_id: int = None,
+                                        license_agreement_id: int = None,
+                                        property_management_contract_id: int = None,
+                                        responsible_official_repair_id: int = None,
+                                        department_id: int = None,
+                                        recording_date=None,
+                                        completion_date=None,
+                                        placing_date=None,
+                                        acceptance_date=None,
+                                        execution_from=None,
+                                        execution_to=None,
+                                        time_damage=None,
+                                        positions: List[Dict] = None,
+                                        facility_id: int = None,
+                                        component_id: int = None,
+                                        commission_status_id: int = None,
+                                        short_description_crafts_process: str = None,
+                                        add_args: Dict = None):
+        data_dict = {}
+        self._add_openwowi_data(data_dict, 'CraftsProcessId', crafts_process_id)
+        self._add_openwowi_data(data_dict, 'IdNum', id_num)
+        self._add_openwowi_data(data_dict, 'Code', code)
+        self._add_openwowi_data(data_dict, 'ExternalIdentificationNumber', external_identification_number)
+        self._add_openwowi_data(data_dict, 'CommissionTypeId', commission_type_id)
+        self._add_openwowi_data(data_dict, 'CreditorId', creditor_id)
+        self._add_openwowi_data(data_dict, 'UseUnitId', use_unit_id)
+        self._add_openwowi_data(data_dict, 'BuildingId', building_id)
+        self._add_openwowi_data(data_dict, 'LandId', land_id)
+        self._add_openwowi_data(data_dict, 'EconomicUnitId', economic_unit_id)
+        self._add_openwowi_data(data_dict, 'LicenseAgreementId', license_agreement_id)
+        self._add_openwowi_data(data_dict, 'PropertyManagementContractId', property_management_contract_id)
+        self._add_openwowi_data(data_dict, 'ResponsibleOfficialRepairId', responsible_official_repair_id)
+        self._add_openwowi_data(data_dict, 'DepartmentId', department_id)
+        self._add_openwowi_data(data_dict, 'RecordingDate', recording_date)
+        self._add_openwowi_data(data_dict, 'CompletionDate', completion_date)
+        self._add_openwowi_data(data_dict, 'PlacingDate', placing_date)
+        self._add_openwowi_data(data_dict, 'AcceptanceDate', acceptance_date)
+        self._add_openwowi_data(data_dict, 'ExecutionFrom', execution_from)
+        self._add_openwowi_data(data_dict, 'ExecutionTo', execution_to)
+        self._add_openwowi_data(data_dict, 'TimeDamage', time_damage)
+        self._add_openwowi_data(data_dict, 'Positions', positions)
+        self._add_openwowi_data(data_dict, 'FacilityId', facility_id)
+        self._add_openwowi_data(data_dict, 'ComponentId', component_id)
+        self._add_openwowi_data(data_dict, 'CommissionStatusId', commission_status_id)
+        self._add_openwowi_data(data_dict, 'ShortDescriptionCraftsProcess', short_description_crafts_process)
+        if add_args is not None:
+            data_dict.update(add_args)
+        return self._rest_adapter.post(endpoint='CommissioningEdit/Commission', data=data_dict)
+
+    def create_commissioning_commission_wait_for_craftsman_feedback(self,
+                                                                    crafts_process_id: int = None,
+                                                                    id_num: str = None,
+                                                                    code: str = None,
+                                                                    external_identification_number: str = None,
+                                                                    commission_type_id: int = None,
+                                                                    creditor_id: int = None,
+                                                                    use_unit_id: int = None,
+                                                                    building_id: int = None,
+                                                                    land_id: int = None,
+                                                                    economic_unit_id: int = None,
+                                                                    license_agreement_id: int = None,
+                                                                    property_management_contract_id: int = None,
+                                                                    responsible_official_repair_id: int = None,
+                                                                    department_id: int = None,
+                                                                    recording_date=None,
+                                                                    completion_date=None,
+                                                                    placing_date=None,
+                                                                    acceptance_date=None,
+                                                                    execution_from=None,
+                                                                    execution_to=None,
+                                                                    time_damage=None,
+                                                                    positions: List[Dict] = None,
+                                                                    facility_id: int = None,
+                                                                    component_id: int = None,
+                                                                    short_description_crafts_process: str = None,
+                                                                    add_args: Dict = None):
+        data_dict = {}
+        self._add_openwowi_data(data_dict, 'CraftsProcessId', crafts_process_id)
+        self._add_openwowi_data(data_dict, 'IdNum', id_num)
+        self._add_openwowi_data(data_dict, 'Code', code)
+        self._add_openwowi_data(data_dict, 'ExternalIdentificationNumber', external_identification_number)
+        self._add_openwowi_data(data_dict, 'CommissionTypeId', commission_type_id)
+        self._add_openwowi_data(data_dict, 'CreditorId', creditor_id)
+        self._add_openwowi_data(data_dict, 'UseUnitId', use_unit_id)
+        self._add_openwowi_data(data_dict, 'BuildingId', building_id)
+        self._add_openwowi_data(data_dict, 'LandId', land_id)
+        self._add_openwowi_data(data_dict, 'EconomicUnitId', economic_unit_id)
+        self._add_openwowi_data(data_dict, 'LicenseAgreementId', license_agreement_id)
+        self._add_openwowi_data(data_dict, 'PropertyManagementContractId', property_management_contract_id)
+        self._add_openwowi_data(data_dict, 'ResponsibleOfficialRepairId', responsible_official_repair_id)
+        self._add_openwowi_data(data_dict, 'DepartmentId', department_id)
+        self._add_openwowi_data(data_dict, 'RecordingDate', recording_date)
+        self._add_openwowi_data(data_dict, 'CompletionDate', completion_date)
+        self._add_openwowi_data(data_dict, 'PlacingDate', placing_date)
+        self._add_openwowi_data(data_dict, 'AcceptanceDate', acceptance_date)
+        self._add_openwowi_data(data_dict, 'ExecutionFrom', execution_from)
+        self._add_openwowi_data(data_dict, 'ExecutionTo', execution_to)
+        self._add_openwowi_data(data_dict, 'TimeDamage', time_damage)
+        self._add_openwowi_data(data_dict, 'Positions', positions)
+        self._add_openwowi_data(data_dict, 'FacilityId', facility_id)
+        self._add_openwowi_data(data_dict, 'ComponentId', component_id)
+        self._add_openwowi_data(data_dict, 'ShortDescriptionCraftsProcess', short_description_crafts_process)
+        if add_args is not None:
+            data_dict.update(add_args)
+        return self._rest_adapter.post(endpoint='CommissioningEdit/Commission/WaitForCraftsmanFeedback', data=data_dict)
+
+    def set_commissioning_commission_to_accepted(self, commission_id: int):
+        data_dict = {}
+        return self._rest_adapter.put(endpoint=f'CommissioningEdit/Commission/{commission_id}/Accepted', data=data_dict)
+
+    def set_commissioning_commission_to_refused(self, commission_id: int, reason_for_refusal: str = None):
+        data_dict = {}
+        self._add_openwowi_data(data_dict, 'ReasonForRefusal', reason_for_refusal)
+        return self._rest_adapter.put(endpoint=f'CommissioningEdit/Commission/{commission_id}/Refused', data=data_dict)
+
+    def set_commissioning_commission_to_await_invoice(self, commission_id: int):
+        data_dict = {}
+        return self._rest_adapter.put(endpoint=f'CommissioningEdit/Commission/{commission_id}/AwaitInvoice', data=data_dict)
+
+    def set_commissioning_commission_to_done(self, commission_id: int):
+        data_dict = {}
+        return self._rest_adapter.put(endpoint=f'CommissioningEdit/Commission/{commission_id}/Done', data=data_dict)
+
+    def set_commissioning_commission_to_imported(self, commission_id: int):
+        data_dict = {}
+        return self._rest_adapter.put(endpoint=f'CommissioningEdit/Commission/{commission_id}/Imported', data=data_dict)
+
+    def set_commissioning_commission_to_canceled(self, commission_id: int):
+        data_dict = {}
+        return self._rest_adapter.put(endpoint=f'CommissioningEdit/Commission/{commission_id}/Canceled', data=data_dict)
+
+    def set_commissioning_craftsman_crafts_portal_id(self, craftsman_id: int, craftsman_portal_id: str = None):
+        data_dict = {}
+        self._add_openwowi_data(data_dict, 'CraftsmanPortalId', craftsman_portal_id)
+        return self._rest_adapter.put(endpoint=f'CommissioningEdit/Craftsman/{craftsman_id}', data=data_dict)
+
+    def create_commissioning_crafts_process_note(self, crafts_process_id: int, description: str):
+        return self._rest_adapter.post(endpoint=f'CommissioningEdit/CraftsProcess/{crafts_process_id}/Note',
+                                       data=description)
+
+    def edit_commissioning_crafts_process_note(self, crafts_process_id: int, note_id: int, description: str):
+        return self._rest_adapter.put(endpoint=f'CommissioningEdit/CraftsProcess/{crafts_process_id}/Note/{note_id}',
+                                      data=description)
+
+    def delete_commissioning_crafts_process_note(self, crafts_process_id: int, note_id: int):
+        data_dict = {}
+        return self._rest_adapter.delete(endpoint=f'CommissioningEdit/CraftsProcess/{crafts_process_id}/Note/{note_id}',
+                                         data=data_dict)
+
+    def create_commissioning_insurance_contract(self,
+                                                id_num: str = None,
+                                                node_id: int = None,
+                                                code: str = None,
+                                                insurer_id: int = None,
+                                                valid_from=None,
+                                                valid_to=None,
+                                                assigned_commissioning_insurance_damage_divisions: List[Dict] = None,
+                                                assigned_economic_units: List[Dict] = None,
+                                                add_args: Dict = None):
+        data_dict = {}
+        self._add_openwowi_data(data_dict, 'IdNum', id_num)
+        self._add_openwowi_data(data_dict, 'NodeId', node_id)
+        self._add_openwowi_data(data_dict, 'Code', code)
+        self._add_openwowi_data(data_dict, 'InsurerId', insurer_id)
+        self._add_openwowi_data(data_dict, 'ValidFrom', valid_from)
+        self._add_openwowi_data(data_dict, 'ValidTo', valid_to)
+        self._add_openwowi_data(data_dict, 'AssignedCommissioningInsuranceDamageDivisions', assigned_commissioning_insurance_damage_divisions)
+        self._add_openwowi_data(data_dict, 'AssignedEconomicUnits', assigned_economic_units)
+        if add_args is not None:
+            data_dict.update(add_args)
+        return self._rest_adapter.post(endpoint='CommissioningEdit/InsuranceContract', data=data_dict)
+
+    def edit_commissioning_insurance_contract(self,
+                                              insurance_contract_id: int,
+                                              id_num: str = None,
+                                              code: str = None,
+                                              insurer_id: int = None,
+                                              valid_from=None,
+                                              valid_to=None,
+                                              assigned_commissioning_insurance_damage_divisions: List[Dict] = None,
+                                              assigned_economic_units: List[Dict] = None,
+                                              add_args: Dict = None):
+        data_dict = {}
+        self._add_openwowi_data(data_dict, 'IdNum', id_num)
+        self._add_openwowi_data(data_dict, 'Code', code)
+        self._add_openwowi_data(data_dict, 'InsurerId', insurer_id)
+        self._add_openwowi_data(data_dict, 'ValidFrom', valid_from)
+        self._add_openwowi_data(data_dict, 'ValidTo', valid_to)
+        self._add_openwowi_data(data_dict, 'AssignedCommissioningInsuranceDamageDivisions', assigned_commissioning_insurance_damage_divisions)
+        self._add_openwowi_data(data_dict, 'AssignedEconomicUnits', assigned_economic_units)
+        if add_args is not None:
+            data_dict.update(add_args)
+        return self._rest_adapter.put(endpoint=f'CommissioningEdit/InsuranceContract/{insurance_contract_id}',
+                                      data=data_dict)
+
+    def create_commissioning_damage_division(self,
+                                             id_num: str = None,
+                                             code: str = None,
+                                             external_identification_number: str = None,
+                                             node_id: int = None,
+                                             add_args: Dict = None):
+        data_dict = {}
+        self._add_openwowi_data(data_dict, 'IdNum', id_num)
+        self._add_openwowi_data(data_dict, 'Code', code)
+        self._add_openwowi_data(data_dict, 'ExternalIdentificationNumber', external_identification_number)
+        self._add_openwowi_data(data_dict, 'NodeId', node_id)
+        if add_args is not None:
+            data_dict.update(add_args)
+        return self._rest_adapter.post(endpoint='CommissioningEdit/DamageDivision', data=data_dict)
+
+    def edit_commissioning_damage_division(self,
+                                           damage_division_id: int,
+                                           id_num: str = None,
+                                           code: str = None,
+                                           external_identification_number: str = None,
+                                           node_id: int = None,
+                                           add_args: Dict = None):
+        data_dict = {}
+        self._add_openwowi_data(data_dict, 'IdNum', id_num)
+        self._add_openwowi_data(data_dict, 'Code', code)
+        self._add_openwowi_data(data_dict, 'ExternalIdentificationNumber', external_identification_number)
+        self._add_openwowi_data(data_dict, 'NodeId', node_id)
+        if add_args is not None:
+            data_dict.update(add_args)
+        return self._rest_adapter.put(endpoint=f'CommissioningEdit/DamageDivision/{damage_division_id}',
+                                      data=data_dict)
+
+    def delete_commissioning_damage_division(self, damage_division_id: int):
+        data_dict = {}
+        return self._rest_adapter.delete(endpoint=f'CommissioningEdit/DamageDivision/{damage_division_id}',
+                                         data=data_dict)
+
+    def create_commissioning_damage_cause(self,
+                                          id_num: str = None,
+                                          damage_division_id: int = None,
+                                          external_identification_number: str = None,
+                                          code: str = None,
+                                          add_args: Dict = None):
+        data_dict = {}
+        self._add_openwowi_data(data_dict, 'IdNum', id_num)
+        self._add_openwowi_data(data_dict, 'DamageDivisionId', damage_division_id)
+        self._add_openwowi_data(data_dict, 'ExternalIdentificationNumber', external_identification_number)
+        self._add_openwowi_data(data_dict, 'Code', code)
+        if add_args is not None:
+            data_dict.update(add_args)
+        return self._rest_adapter.post(endpoint='CommissioningEdit/DamageCause', data=data_dict)
+
+    def edit_commissioning_damage_cause(self,
+                                        damage_cause_id: int,
+                                        id_num: str = None,
+                                        damage_division_id: int = None,
+                                        external_identification_number: str = None,
+                                        code: str = None,
+                                        add_args: Dict = None):
+        data_dict = {}
+        self._add_openwowi_data(data_dict, 'IdNum', id_num)
+        self._add_openwowi_data(data_dict, 'DamageDivisionId', damage_division_id)
+        self._add_openwowi_data(data_dict, 'ExternalIdentificationNumber', external_identification_number)
+        self._add_openwowi_data(data_dict, 'Code', code)
+        if add_args is not None:
+            data_dict.update(add_args)
+        return self._rest_adapter.put(endpoint=f'CommissioningEdit/DamageCause/{damage_cause_id}',
+                                      data=data_dict)

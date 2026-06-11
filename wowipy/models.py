@@ -675,10 +675,13 @@ class QuantityType:
     code: str
     arge_code: Optional[str]
 
-    def __init__(self, id_: int, name: str, code: str, arge_code: str = None, **kwargs) -> None:
+    def __init__(self, name: str, code: str, arge_code: str = None, **kwargs) -> None:
         if kwargs:
             pass
-        self.id_ = id_
+        if kwargs.get("_id"):
+            self.id_ = kwargs.get("_id")
+        elif kwargs.get("id"):
+            self.id_ = kwargs.get("id")
         self.name = name
         self.code = code
         self.arge_code = arge_code
@@ -1407,6 +1410,7 @@ class BuildingLand:
     building: Building
     exit_reason: Optional[ExitReason]
     company_code: Optional[CompanyCode]
+    additional_fields: Optional[List[Dict]]
 
     def __init__(self, id_: int, id_num: str, building_land_type: int, entry_date: datetime,
                  economic_unit: Dict,
@@ -1435,6 +1439,7 @@ class BuildingLand:
             self.company_code = CompanyCode(**company_code)
         else:
             self.company_code = None
+        self.additional_fields = kwargs.get("additional_fields")
         self.__dict__.update(kwargs)
 
 

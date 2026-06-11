@@ -786,6 +786,7 @@ class WowiPy:
         # Ein paar Standardwerte, können aber durch add_args überschrieben werden
         filter_params['includeCompanyCode'] = 'true'
         filter_params['showNullValues'] = 'true'
+        filter_params['includeAdditionalField'] = 'true'
 
         if add_args is not None:
             filter_params.update(add_args)
@@ -2723,7 +2724,8 @@ class WowiPy:
         self._add_openwowi_param(filter_params, 'companyCodeId', company_code_id)
         self._add_openwowi_param(filter_params, 'companyCodeCode', company_code_code)
         filter_params['includeCommissionItems'] = 'true' if include_commission_items else 'false'
-        filter_params['includeAlsoCanceledCommissionItems'] = 'true' if include_also_canceled_commission_items else 'false'
+        filter_params[
+            'includeAlsoCanceledCommissionItems'] = 'true' if include_also_canceled_commission_items else 'false'
         filter_params['includeResponsibleOfficialRepair'] = 'true' if include_responsible_official_repair else 'false'
         filter_params['includeCommissionDetails'] = 'true' if include_commission_details else 'false'
         filter_params['includeDefects'] = 'true' if include_defects else 'false'
@@ -2753,7 +2755,8 @@ class WowiPy:
                                                            include_payment_order: bool = False,
                                                            show_null_values: bool = False,
                                                            add_args: Dict = None,
-                                                           fetch_all: bool = False) -> List[CommissioningInvoiceReceiptCommissionItems]:
+                                                           fetch_all: bool = False) -> List[
+        CommissioningInvoiceReceiptCommissionItems]:
         filter_params = {}
         self._add_openwowi_param(filter_params, 'limit', limit)
         self._add_openwowi_param(filter_params, 'offset', offset)
@@ -2792,7 +2795,8 @@ class WowiPy:
                                                          invoice_date_to=None,
                                                          show_null_values: bool = False,
                                                          add_args: Dict = None,
-                                                         fetch_all: bool = False) -> List[CommissioningInvoiceReceiptPaymentOrders]:
+                                                         fetch_all: bool = False) -> List[
+        CommissioningInvoiceReceiptPaymentOrders]:
         filter_params = {}
         self._add_openwowi_param(filter_params, 'limit', limit)
         self._add_openwowi_param(filter_params, 'offset', offset)
@@ -2871,7 +2875,8 @@ class WowiPy:
                                                            include_commission_types: bool = False,
                                                            show_null_values: bool = False,
                                                            add_args: Dict = None,
-                                                           fetch_all: bool = False) -> List[CommissioningServiceCatalogue]:
+                                                           fetch_all: bool = False) -> List[
+        CommissioningServiceCatalogue]:
         filter_params = {}
         self._add_openwowi_param(filter_params, 'limit', limit)
         self._add_openwowi_param(filter_params, 'offset', offset)
@@ -3014,7 +3019,8 @@ class WowiPy:
                                                                 include_payment_order: bool = False,
                                                                 show_null_values: bool = False,
                                                                 add_args: Dict = None,
-                                                                fetch_all: bool = False) -> List[CommissioningInvoiceReceiptCommissionItems]:
+                                                                fetch_all: bool = False) -> List[
+        CommissioningInvoiceReceiptCommissionItems]:
         filter_params = {}
         self._add_openwowi_param(filter_params, 'limit', limit)
         self._add_openwowi_param(filter_params, 'offset', offset)
@@ -3073,7 +3079,8 @@ class WowiPy:
         self._add_openwowi_data(data_dict, 'LandId', land_id)
         self._add_openwowi_data(data_dict, 'UseUnitId', use_unit_id)
         self._add_openwowi_data(data_dict, 'LicenseAgreementId', license_agreement_id)
-        self._add_openwowi_data(data_dict, 'PersonInChargeResponsibleOfficialId', person_in_charge_responsible_official_id)
+        self._add_openwowi_data(data_dict, 'PersonInChargeResponsibleOfficialId',
+                                person_in_charge_responsible_official_id)
         self._add_openwowi_data(data_dict, 'CraftsProcessFrom', crafts_process_from)
         self._add_openwowi_data(data_dict, 'CraftsProcessTo', crafts_process_to)
         self._add_openwowi_data(data_dict, 'InsuranceData', insurance_data)
@@ -3117,7 +3124,8 @@ class WowiPy:
         self._add_openwowi_data(data_dict, 'LandId', land_id)
         self._add_openwowi_data(data_dict, 'UseUnitId', use_unit_id)
         self._add_openwowi_data(data_dict, 'LicenseAgreementId', license_agreement_id)
-        self._add_openwowi_data(data_dict, 'PersonInChargeResponsibleOfficialId', person_in_charge_responsible_official_id)
+        self._add_openwowi_data(data_dict, 'PersonInChargeResponsibleOfficialId',
+                                person_in_charge_responsible_official_id)
         self._add_openwowi_data(data_dict, 'CraftsProcessFrom', crafts_process_from)
         self._add_openwowi_data(data_dict, 'CraftsProcessTo', crafts_process_to)
         self._add_openwowi_data(data_dict, 'InsuranceData', insurance_data)
@@ -3127,7 +3135,8 @@ class WowiPy:
 
     def delete_commissioning_crafts_process(self, crafts_process_id: int):
         data_dict = {}
-        return self._rest_adapter.delete(endpoint=f'CommissioningEdit/CraftsProcess/{crafts_process_id}', data=data_dict)
+        return self._rest_adapter.delete(endpoint=f'CommissioningEdit/CraftsProcess/{crafts_process_id}',
+                                         data=data_dict)
 
     def create_commissioning_commission(self,
                                         crafts_process_id: int = None,
@@ -3256,7 +3265,8 @@ class WowiPy:
 
     def set_commissioning_commission_to_await_invoice(self, commission_id: int):
         data_dict = {}
-        return self._rest_adapter.put(endpoint=f'CommissioningEdit/Commission/{commission_id}/AwaitInvoice', data=data_dict)
+        return self._rest_adapter.put(endpoint=f'CommissioningEdit/Commission/{commission_id}/AwaitInvoice',
+                                      data=data_dict)
 
     def set_commissioning_commission_to_done(self, commission_id: int):
         data_dict = {}
@@ -3305,7 +3315,8 @@ class WowiPy:
         self._add_openwowi_data(data_dict, 'InsurerId', insurer_id)
         self._add_openwowi_data(data_dict, 'ValidFrom', valid_from)
         self._add_openwowi_data(data_dict, 'ValidTo', valid_to)
-        self._add_openwowi_data(data_dict, 'AssignedCommissioningInsuranceDamageDivisions', assigned_commissioning_insurance_damage_divisions)
+        self._add_openwowi_data(data_dict, 'AssignedCommissioningInsuranceDamageDivisions',
+                                assigned_commissioning_insurance_damage_divisions)
         self._add_openwowi_data(data_dict, 'AssignedEconomicUnits', assigned_economic_units)
         if add_args is not None:
             data_dict.update(add_args)
@@ -3327,7 +3338,8 @@ class WowiPy:
         self._add_openwowi_data(data_dict, 'InsurerId', insurer_id)
         self._add_openwowi_data(data_dict, 'ValidFrom', valid_from)
         self._add_openwowi_data(data_dict, 'ValidTo', valid_to)
-        self._add_openwowi_data(data_dict, 'AssignedCommissioningInsuranceDamageDivisions', assigned_commissioning_insurance_damage_divisions)
+        self._add_openwowi_data(data_dict, 'AssignedCommissioningInsuranceDamageDivisions',
+                                assigned_commissioning_insurance_damage_divisions)
         self._add_openwowi_data(data_dict, 'AssignedEconomicUnits', assigned_economic_units)
         if add_args is not None:
             data_dict.update(add_args)

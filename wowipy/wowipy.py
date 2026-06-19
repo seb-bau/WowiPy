@@ -3483,3 +3483,65 @@ class WowiPy:
             retlist.append(ret_per)
 
         return retlist
+
+    def get_open_rent_account_positions(self,
+                                        limit: int = 100,
+                                        offset: int = 0,
+                                        rent_account_id: int | None = None,
+                                        economic_unit_id: int | None = None,
+                                        use_unit_id: int | None = None,
+                                        license_agreement_id: int | None = None,
+                                        license_agreement_active_on: datetime | None = None,
+                                        add_args: Dict | None = None,
+                                        fetch_all: bool = False) -> List[RentAccountOpenPosition]:
+        filter_params = {}
+        if rent_account_id:
+            filter_params['rentAccountId'] = rent_account_id
+        if economic_unit_id:
+            filter_params['economicUnitId'] = economic_unit_id
+        if use_unit_id:
+            filter_params['useUnitId'] = use_unit_id
+        if license_agreement_id:
+            filter_params['licenseAgreementId'] = license_agreement_id
+        if license_agreement_active_on:
+            filter_params['licenseAgreementActiveOn'] = license_agreement_active_on.strftime("%Y-%m-%d")
+
+        filter_params['limit'] = limit
+        filter_params['offset'] = offset
+        filter_params['showNullValues'] = 'true'
+
+        if add_args is not None:
+            filter_params.update(add_args)
+
+        retlist = []
+
+        if not fetch_all:
+            result = self._rest_adapter.get(endpoint='RentAccountingTransactionData/RentAccountOpenItems',
+                                            ep_params=filter_params,
+                                            force_refresh=True)
+        else:
+            result = Result(0, "", [])
+            merge_schema = {"mergeStrategy": "append"}
+            merger = Merger(schema=merge_schema)
+            filter_params['offset'] = 0
+            filter_params['limit'] = 100
+            response_count = 100
+            while response_count == 100:
+                print(filter_params)
+                part_result = self._rest_adapter.get(endpoint='RentAccountingTransactionData/RentAccountOpenItems',
+                                                     ep_params=filter_params,
+                                                     force_refresh=True)
+                result.data = merger.merge(result.data, part_result.data)
+                filter_params['offset'] += 100
+                response_count = len(part_result.data)
+                print(f"Rent-Account-Open-Position-Count: {len(result.data)}")
+
+        for entry in result.data:
+            # noinspection PyTypeChecker
+            data = dict(humps.decamelize(entry))
+            data['id_'] = data.pop('id')
+
+            ret_per = RentAccountOpenPosition(**data)
+            retlist.append(ret_per)
+
+        return retlist

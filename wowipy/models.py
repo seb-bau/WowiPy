@@ -3728,4 +3728,52 @@ class RentAccount:
 
     def __repr__(self):
         return f"RentAccount id {self.id_} for license agreement {self.license_agreement.get('id_num')}"
-        
+
+
+class RentAccountOpenPosition:
+    id_: int
+    debit_credit: str
+    amount: Decimal
+    due_date: str
+    booking_text_open_items: Optional[str]
+    own_reference: Optional[str]
+    info: Optional[str]
+    license_agreement: dict
+    is_locked: bool
+    is_booked: bool
+    open_item_master_account_id: int
+    open_item_master_account_code: str
+    booking_count: int
+
+    def __init__(self, id_: int,
+                 debit_credit: str,
+                 amount: Decimal,
+                 due_date: str,
+                 booking_text_open_items: str,
+                 own_reference: str,
+                 info: str,
+                 license_agreement: dict,
+                 is_locked: bool,
+                 is_booked: bool,
+                 booking_count: int,
+                 **kwargs):
+        if kwargs:
+            pass
+
+        self.id_ = id_
+        self.license_agreement = license_agreement
+        self.debit_credit = debit_credit
+        self.amount = amount
+        self.due_date = due_date
+        self.booking_text_open_items = booking_text_open_items
+        self.own_reference = own_reference
+        self.info = info
+        self.is_booked = bool(is_booked)
+        self.is_locked = bool(is_locked)
+        self.open_item_master_account_id = kwargs.get("open_item_master_account").get("id")
+        self.open_item_master_account_code = kwargs.get("open_item_master_account").get("code")
+        self.booking_count = booking_count
+
+    def __repr__(self):
+        return (f"RA Open Item id {self.id_} for contract {self.license_agreement.get('id_num')}. Amount {self.amount}"
+                f", booking text {self.booking_text_open_items}")

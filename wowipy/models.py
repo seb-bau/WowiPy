@@ -3693,3 +3693,39 @@ class CommissioningCommission:
         self.property_management_contract_id = property_management_contract_id
         self.responsible_official_repair_id = responsible_official_repair_id
         self.department_id = department_id
+
+
+class RentAccount:
+    id_: int
+    license_agreement: dict
+    day_balance_by_open_items: Decimal
+    total_balance_by_open_items: Decimal
+    open_items_with_non_zero_amount_count: int
+    balance_at: str
+    has_clearing_lock: bool
+    has_outpayment_lock: bool
+
+    def __init__(self, id_: int,
+                 license_agreement: dict,
+                 day_balance_by_open_items: Decimal,
+                 total_balance_by_open_items: Decimal,
+                 open_items_with_non_zero_amount_count: int,
+                 balance_at: str,
+                 has_clearing_lock: bool,
+                 has_outpayment_lock: bool,
+                 **kwargs):
+        if kwargs:
+            pass
+
+        self.id_ = id_
+        self.license_agreement = license_agreement
+        self.day_balance_by_open_items = day_balance_by_open_items
+        self.total_balance_by_open_items = total_balance_by_open_items
+        self.open_items_with_non_zero_amount_count = open_items_with_non_zero_amount_count
+        self.balance_at = balance_at
+        self.has_outpayment_lock = has_clearing_lock
+        self.has_outpayment_lock = has_outpayment_lock
+
+    def __repr__(self):
+        return f"RentAccount id {self.id_} for license agreement {self.license_agreement.get('id_num')}"
+        

@@ -1131,11 +1131,9 @@ class WowiPy:
         return retlist
 
     def get_all_contract_positions(self,
-                                   contract_positions_active_on: datetime = None,
-                                   use_cache: bool = False) -> List[ContractPosition]:
-        if use_cache:
-            return self._cache[self.CACHE_CONTRACT_POSITIONS]
-
+                                   contract_positions_active_on: datetime | None = None,
+                                   license_agreement_active_on: datetime | None = None,
+                                   add_args: dict | None = None) -> List[ContractPosition]:
         result = Result(0, "", [])
         merge_schema = {"mergeStrategy": "append"}
         merger = Merger(schema=merge_schema)
@@ -1145,7 +1143,8 @@ class WowiPy:
 
         while response_count == 100:
             part_result = self.get_contract_positions(contract_positions_active_on=contract_positions_active_on,
-                                                      limit=limit, offset=offset)
+                                                      license_agreement_active_on=license_agreement_active_on,
+                                                      limit=limit, offset=offset, add_args=add_args)
             result.data = merger.merge(result.data, part_result)
             offset += 100
             response_count = len(part_result)
@@ -1190,12 +1189,15 @@ class WowiPy:
         return retlist
 
     def get_contract_positions(self,
-                               license_agreement_idnum: str = None,
-                               license_agreement_id: int = None,
-                               contract_positions_active_on: datetime = None,
-                               limit: int = None,
-                               offset: int = 0,
-                               add_args: Dict = None) -> List[ContractPosition]:
+                               license_agreement_idnum: str | None = None,
+                               license_agreement_id: int | None = None,
+                               contract_positions_active_on: datetime | None = None,
+                               license_agreement_active_on: datetime | None = None,
+                               economic_unit_id: int | None = None,
+                               use_unit_id: int | None = None,
+                               limit: int | None = None,
+                               offset: int | None = None,
+                               add_args: dict | None = None) -> List[ContractPosition]:
 
         filter_params = {}
         if license_agreement_idnum is not None:
@@ -1204,9 +1206,15 @@ class WowiPy:
             filter_params['licenseAgreementId'] = license_agreement_id
         if contract_positions_active_on is not None:
             filter_params['contractPositionsActiveOn'] = contract_positions_active_on.strftime("%Y-%m-%d")
+        if license_agreement_active_on is not None:
+            filter_params['licenseAgreementActiveOn'] = license_agreement_active_on.strftime("%Y-%m-%d")
+        if economic_unit_id is not None:
+            filter_params['economicUnitId'] = economic_unit_id
+        if use_unit_id is not None:
+            filter_params['useUnitId'] = use_unit_id
         if limit is not None:
             filter_params['limit'] = limit
-        filter_params['offset'] = offset
+        filter_params['offset'] = offset or 0
 
         filter_params['includeContractPositionTypeDetails'] = 'true'
         filter_params['showNullValues'] = 'true'
@@ -3414,3 +3422,64 @@ class WowiPy:
             data_dict.update(add_args)
         return self._rest_adapter.put(endpoint=f'CommissioningEdit/DamageCause/{damage_cause_id}',
                                       data=data_dict)
+
+    def get_rent_accounts(self,
+                          limit: int = 100,
+                          offset: int = 0,
+                          id_: int | None = None,
+                          economic_unit_id: int | None = None,
+                          use_unit_id: int | None = None,
+                          license_agreement_id: int | None = None,
+                          license_agreement_active_on: datetime | None = None,
+                          add_args: Dict | None = None,
+                          fetch_all: bool = False) -> List[RentAccount]:
+        filter_params = {}
+        if id_:
+            filter_params['rentAccountId'] = id_
+        if economic_unit_id:
+            filter_params['economicUnitId'] = economic_unit_id
+        if use_unit_id:
+            filter_params['useUnitId'] = use_unit_id
+        if license_agreement_id:
+            filter_params['licenseAgreementId'] = license_agreement_id
+        if license_agreement_active_on:
+            filter_params['licenseAgreementActiveOn'] = license_agreement_active_on.strftime("%Y-%m-%d")
+
+        filter_params['limit'] = limit
+        filter_params['offset'] = offset
+        filter_params['showNullValues'] = 'true'
+
+        if add_args is not None:
+            filter_params.update(add_args)
+
+        retlist = []
+
+        if not fetch_all:
+            result = self._rest_adapter.get(endpoint='RentAccountingTransactionData/RentAccounts',
+                                            ep_params=filter_params,
+                                            force_refresh=True)
+        else:
+            result = Result(0, "", [])
+            merge_schema = {"mergeStrategy": "append"}
+            merger = Merger(schema=merge_schema)
+            filter_params['offset'] = 0
+            filter_params['limit'] = 100
+            response_count = 100
+            while response_count == 100:
+                part_result = self._rest_adapter.get(endpoint='RentAccountingTransactionData/RentAccounts',
+                                                     ep_params=filter_params,
+                                                     force_refresh=True)
+                result.data = merger.merge(result.data, part_result.data)
+                filter_params['offset'] += 100
+                response_count = len(part_result.data)
+                print(f"Rent-Account-Count: {len(result.data)}")
+
+        for entry in result.data:
+            # noinspection PyTypeChecker
+            data = dict(humps.decamelize(entry))
+            data['id_'] = data.pop('id')
+
+            ret_per = RentAccount(**data)
+            retlist.append(ret_per)
+
+        return retlist

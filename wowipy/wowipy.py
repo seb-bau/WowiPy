@@ -1144,7 +1144,7 @@ class WowiPy:
         while response_count == 100:
             part_result = self.get_contract_positions(contract_positions_active_on=contract_positions_active_on,
                                                       license_agreement_active_on=license_agreement_active_on,
-                                                      limit=limit, offset=offset, add_args=add_args)
+                                                      limit=limit, offset=offset, add_args=add_args, fetch_all=True)
             result.data = merger.merge(result.data, part_result)
             offset += 100
             response_count = len(part_result)
@@ -1197,7 +1197,8 @@ class WowiPy:
                                use_unit_id: int | None = None,
                                limit: int | None = None,
                                offset: int | None = None,
-                               add_args: dict | None = None) -> List[ContractPosition]:
+                               add_args: dict | None = None,
+                               fetch_all=True) -> List[ContractPosition]:
 
         filter_params = {}
         if license_agreement_idnum is not None:
@@ -1223,9 +1224,28 @@ class WowiPy:
             filter_params.update(add_args)
 
         retlist = []
-        result = self._rest_adapter.get(endpoint='RentAccounting/ContractPositions', ep_params=filter_params)
+
+        if not fetch_all:
+            result = self._rest_adapter.get(endpoint='RentAccounting/ContractPositions',
+                                            ep_params=filter_params,
+                                            force_refresh=True)
+        else:
+            result = Result(0, "", [])
+            merge_schema = {"mergeStrategy": "append"}
+            merger = Merger(schema=merge_schema)
+            filter_params['offset'] = 0
+            filter_params['limit'] = 100
+            response_count = 100
+            while response_count == 100:
+                part_result = self._rest_adapter.get(endpoint='RentAccounting/ContractPositions',
+                                                     ep_params=filter_params,
+                                                     force_refresh=True)
+                result.data = merger.merge(result.data, part_result.data)
+                filter_params['offset'] += 100
+                response_count = len(part_result.data)
 
         for entry in result.data:
+            # noinspection PyTypeChecker
             data = dict(humps.decamelize(entry))
             data['id_'] = data.pop('id')
             ret_la = ContractPosition(**data)

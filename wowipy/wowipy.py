@@ -1458,17 +1458,34 @@ class WowiPy:
         result = self._rest_adapter.post(endpoint='CommunicationEdit/Ticket', data=data_dict)
         return result
 
+    def create_ticket_conversation(self,
+                                   ticket_id: int,
+                                   content: str = None,
+                                   ticket_source_id: int = None,
+                                   person_id: int = None,
+                                   user_id: int = None,
+                                   created_at: datetime = None,
+                                   location: str = None
+                                   ) -> Result:
+        data_dict = {
+            "TicketId": ticket_id
+        }
+        self._add_openwowi_data(data_dict, 'TicketSourceId', ticket_source_id)
+        self._add_openwowi_data(data_dict, 'PersonId', person_id)
+        self._add_openwowi_data(data_dict, 'UserId', user_id)
+        self._add_openwowi_data(data_dict, 'CreatedAt',
+                                created_at.isoformat() if isinstance(created_at, datetime) else created_at)
+        self._add_openwowi_data(data_dict, 'Location', location)
+        self._add_openwowi_data(data_dict, 'Content', content)
+
+        result = self._rest_adapter.post(endpoint='CommunicationEdit/Ticket/AddConversation', data=data_dict)
+        return result
+
     def create_ticket_comment(self,
                               ticket_id: int,
                               content: str
                               ) -> Result:
-        data_dict = {
-            "TicketId": ticket_id,
-            "Content": content
-        }
-
-        result = self._rest_adapter.post(endpoint='CommunicationEdit/Ticket/AddComment', data=data_dict)
-        return result
+        return self.create_ticket_conversation(ticket_id=ticket_id, content=content)
 
     def get_responsible_officials(self,
                                   user_id: int = None,

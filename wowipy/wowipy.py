@@ -1483,9 +1483,10 @@ class WowiPy:
 
     def create_ticket_comment(self,
                               ticket_id: int,
-                              content: str
+                              content: str,
+                              ticket_source_id: int
                               ) -> Result:
-        return self.create_ticket_conversation(ticket_id=ticket_id, content=content)
+        return self.create_ticket_conversation(ticket_id=ticket_id, content=content, ticket_source_id=ticket_source_id)
 
     def get_responsible_officials(self,
                                   user_id: int = None,
